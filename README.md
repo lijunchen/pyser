@@ -11,3 +11,8 @@ This project demostrate how to
 - represent AST in modern C++
 - use visitor pattern
 - ...
+
+Resources:
+-  [AST definition](https://github.com/python/cpython/blob/main/Parser/Python.asdl)
+- [Token definition](https://github.com/python/cpython/blob/main/Grammar/Tokens)
+- [Full Grammar specification](https://docs.python.org/3.10/reference/grammar.html)
