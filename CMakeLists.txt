@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 
 project (pyser)
 
-set(SOURCES
-    src/main.cpp
-)
+aux_source_directory(src SRC)
 
 add_executable(pyser
-    ${SOURCES}
+    ${SRC}
 )
+
+target_compile_features(pyser PRIVATE cxx_std_17)
 
 target_include_directories(pyser
     PRIVATE 

@@ -1,0 +1,4 @@
+PointerAlignment: Left
+AccessModifierOffset: -4
+IndentWidth: 4
+ColumnLimit: 128

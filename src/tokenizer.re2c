@@ -1,0 +1,180 @@
+/*
+    Usage: re2c --tags ./tokenizer.re2c -o Tokenizer.cpp
+*/
+
+#include "Tokenizer.h"
+#include <cstdio>
+#include <string>
+#include <vector>
+#include <stack>
+#include "Token.h"
+#include <iostream>
+
+using namespace std;
+
+int whiteCount(char* line, char* end) {
+  int count = 0;
+  while (line != end) {
+      if (*line == ' ') {
+          count++;
+      } else if (*line == '\t') {
+          count += 4;
+      }
+      line++;
+  }
+  return count;
+}
+
+void processIndent(vector<Token>& toks, stack<int>& ind, int& nesting, char* line, char* end) {
+  if (nesting)
+    return;
+
+  int indent = whiteCount(line, end);
+
+  if (indent == ind.top()) {
+      return;
+  }
+
+  if (indent > ind.top()) {
+    toks.push_back(Token(TokenType::NEWLINE));
+    toks.push_back(Token(TokenType::INDENT, string(indent, ' ')));
+    ind.push(indent);
+    return;
+  }
+
+  while (indent < ind.top()) {
+    ind.pop();
+    toks.push_back(Token(TokenType::NEWLINE));
+    toks.push_back(Token(TokenType::DEDENT));
+  }
+}
+
+vector<Token> Tokenizer::tokenize(const string& input) {
+    const char* str = input.c_str();
+    vector<Token> tokens;
+    int nesting = 0;
+    stack<int> ind;
+    ind.push(0);
+    const char *YYCURSOR = str;
+    const char* YYMARKER;
+    const char *t1, *t2, *t3;
+again:
+    /*!stags:re2c format = 'const char *@@;\n'; */
+    /*!re2c
+        re2c:yyfill:enable = 0;
+        re2c:define:YYCTYPE = char;
+        re2c:tags = 1;
+
+        NUMBER = [0-9]+;
+        NAME = [a-zA-Z_][a-zA-Z0-9_]*;
+        SPACE = [ \t];
+        COMMENT = [#] .*;
+        STRING1 = "'" .* "'";
+        STRING2 = '"' .* '"';
+        STRING3 = '"""' [.\n]* '"""';
+        
+        @t1 NUMBER @t2 {
+            tokens.push_back(Token(TokenType::NUMBER, string(t1, t2 - t1)));
+            goto again;
+        }
+
+        @t1 NAME @t2 {
+            tokens.push_back(Token(TokenType::NAME, string(t1, t2 - t1)));
+            goto again;
+        }
+
+        "'" { tokens.push_back(Token(TokenType::ERRORTOKEN)); goto again; }
+        '"' { tokens.push_back(Token(TokenType::ERRORTOKEN)); goto again; }
+        "%" { tokens.push_back(Token(TokenType::PERCENT, "%")); goto again; }
+        "&" { tokens.push_back(Token(TokenType::AMPER, "&")); goto again; }
+        "(" { tokens.push_back(Token(TokenType::LPAR, "(")); nesting++; goto again; }
+        ")" { tokens.push_back(Token(TokenType::RPAR, ")")); nesting--; goto again; }
+        "*" { tokens.push_back(Token(TokenType::STAR, "*")); goto again; }
+        "+" { tokens.push_back(Token(TokenType::PLUS, "+")); goto again; }
+        "," { tokens.push_back(Token(TokenType::COMMA, ",")); goto again; }
+        "-" { tokens.push_back(Token(TokenType::MINUS, "-")); goto again; }
+        "." { tokens.push_back(Token(TokenType::DOT, ".")); goto again; }
+        "/" { tokens.push_back(Token(TokenType::SLASH, "/")); goto again; }
+        ":" { tokens.push_back(Token(TokenType::COLON, ":")); goto again; }
+        ";" { tokens.push_back(Token(TokenType::SEMI, ";")); goto again; }
+        "<" { tokens.push_back(Token(TokenType::LESS, "<")); goto again; }
+        "=" { tokens.push_back(Token(TokenType::EQUAL, "=")); goto again; }
+        ">" { tokens.push_back(Token(TokenType::GREATER, ">")); goto again; }
+        "@" { tokens.push_back(Token(TokenType::AT, "@")); goto again; }
+        "[" { tokens.push_back(Token(TokenType::LSQB, "[")); nesting++; goto again; }
+        "]" { tokens.push_back(Token(TokenType::RSQB, "]")); nesting--; goto again; }
+        "^" { tokens.push_back(Token(TokenType::CIRCUMFLEX, "^")); goto again; }
+        "{" { tokens.push_back(Token(TokenType::LBRACE, "{")); nesting++; goto again; }
+        "|" { tokens.push_back(Token(TokenType::VBAR, "|")); goto again; }
+        "}" { tokens.push_back(Token(TokenType::RBRACE, "}")); nesting--; goto again; }
+        "~" { tokens.push_back(Token(TokenType::TILDE, "~")); goto again; }
+
+        "!=" { tokens.push_back(Token(TokenType::NOTEQUAL, "!=")); goto again; }
+        "%=" { tokens.push_back(Token(TokenType::PERCENTEQUAL, "%=")); goto again; }
+        "&=" { tokens.push_back(Token(TokenType::AMPEREQUAL, "&=")); goto again; }
+        "**" { tokens.push_back(Token(TokenType::DOUBLESTAR, "**")); goto again; }
+        "*=" { tokens.push_back(Token(TokenType::STAREQUAL, "*=")); goto again; }
+        "+=" { tokens.push_back(Token(TokenType::PLUSEQUAL, "+=")); goto again; }
+        "-=" { tokens.push_back(Token(TokenType::MINEQUAL, "-=")); goto again; }
+        "->" { tokens.push_back(Token(TokenType::RARROW, "->")); goto again; }
+        "//" { tokens.push_back(Token(TokenType::DOUBLESLASH, "//")); goto again; }
+        "/=" { tokens.push_back(Token(TokenType::SLASHEQUAL, "/=")); goto again; }
+        ":=" { tokens.push_back(Token(TokenType::COLONEQUAL, ":=")); goto again; }
+        "<<" { tokens.push_back(Token(TokenType::LEFTSHIFT, "<<")); goto again; }
+        "<=" { tokens.push_back(Token(TokenType::LESSEQUAL, "<=")); goto again; }
+        "<>" { tokens.push_back(Token(TokenType::NOTEQUAL, "<>")); goto again; }
+        "==" { tokens.push_back(Token(TokenType::EQEQUAL, "==")); goto again; }
+        ">=" { tokens.push_back(Token(TokenType::GREATEREQUAL, ">=")); goto again; }
+        ">>" { tokens.push_back(Token(TokenType::RIGHTSHIFT, ">>")); goto again; }
+        "@=" { tokens.push_back(Token(TokenType::ATEQUAL, "@=")); goto again; }
+        "^=" { tokens.push_back(Token(TokenType::CIRCUMFLEXEQUAL, "^=")); goto again; }
+        "|=" { tokens.push_back(Token(TokenType::VBAREQUAL, "|=")); goto again; }
+
+        "**=" { tokens.push_back(Token(TokenType::DOUBLESTAREQUAL, "**=")); goto again; }
+        "..." { tokens.push_back(Token(TokenType::ELLIPSIS, "...")); goto again; }
+        "//=" { tokens.push_back(Token(TokenType::DOUBLESLASHEQUAL, "//=")); goto again; }
+        "<<=" { tokens.push_back(Token(TokenType::LEFTSHIFTEQUAL, "<<=")); goto again; }
+        ">>=" { tokens.push_back(Token(TokenType::RIGHTSHIFTEQUAL, ">>=")); goto again; }
+
+        // ignore blank lines
+        @t1 [\n] @t2 SPACE* @t3 [\n] {
+            YYCURSOR = t3;
+            goto again;
+        }
+
+        @t1 [\n] @t2 SPACE+ @t3 .* {
+            processIndent(tokens, ind, nesting, (char*)t2, (char*)t3);
+            YYCURSOR = t3;
+            goto again;
+        }
+
+        COMMENT { goto again; }
+
+        @t1 STRING3 {
+            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            goto again;
+        }
+        @t1 STRING2 {
+            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            goto again;
+        }
+        @t1 STRING1 {
+            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            goto again;
+        }
+        [ ] { goto again; }
+        [\t] { goto again; }
+
+        [\n] { tokens.push_back(Token(TokenType::NEWLINE)); goto again; }
+
+        [\x00] {
+            processIndent(tokens, ind, nesting, (char*)YYCURSOR, (char*)YYCURSOR);
+            tokens.push_back(Token(TokenType::ENDMARKER));
+        }
+
+        * { goto done; }
+
+    */
+done:
+   return tokens;
+}
