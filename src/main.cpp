@@ -16,7 +16,7 @@ int main() {
             make_unique<BinOp>(
                 make_unique<Num>("123"),
                 operator_::Mult,
-                make_unique<Str>("y", nullopt))
+                make_unique<Name>("y", expr_context::Load))
         )
     );
     body.push_back(move(_x_plus_123_mult_y));
