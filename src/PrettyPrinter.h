@@ -16,6 +16,7 @@ public:
     PPContext ctx;
 public:
     string indent() { return string(ctx.level * 4, ' '); }
+    string operatorToString(operator_ op);
     virtual void visit(Module&) override;
     virtual void visit(Interactive&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Expression&) override { throw runtime_error("not imp yet"); };
