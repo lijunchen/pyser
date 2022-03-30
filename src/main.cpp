@@ -9,9 +9,12 @@ using namespace std;
 
 int main() {
     stmtPs body;
-    stmtP _x_plus_123_mult_y = make_unique<Expr>(
+    stmtP s0 = make_unique<Expr>(
         make_unique<BinOp>(
-            make_unique<Name>("x", expr_context::Load),
+            make_unique<BinOp>(
+                make_unique<Name>("x", expr_context::Load),
+                operator_::Mult,
+                make_unique<Name>("y", expr_context::Load)),
             operator_::Add,
             make_unique<BinOp>(
                 make_unique<Num>("123"),
@@ -19,7 +22,7 @@ int main() {
                 make_unique<Name>("y", expr_context::Load))
         )
     );
-    body.push_back(move(_x_plus_123_mult_y));
+    body.push_back(move(s0));
     stmtPs orelse;
 
     stmtP tree = make_unique<If>(

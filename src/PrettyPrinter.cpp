@@ -2,7 +2,7 @@
 #include "AST.h"
 #include "PrettyPrinter.h"
 
-//Add, Sub, Mult, MatMult, Div, Mod, Pow, LShift, RShift, BitOr, BitXor, BitAnd, FloorDiv 
+// Add, Sub, Mult, MatMult, Div, Mod, Pow, LShift, RShift, BitOr, BitXor, BitAnd, FloorDiv 
 string PrettyPrinter::operatorToString(operator_ op) {
     switch (op) {
         case operator_::Add: return "Add()";
@@ -25,20 +25,29 @@ string PrettyPrinter::operatorToString(operator_ op) {
 
 void PrettyPrinter::visit(Module& node) {
     string s = "Module(\n";
-    ctx.level++;
-    s += indent() + "body=[\n";
-    ctx.level++;
-    for (size_t i = 0; i < node.body.size(); i++) {
-        node.body[i]->accept(*this);
-        s += ctx.s;
-        if (i != node.body.size() - 1) {
-            s += ",\n";
+    {
+        ctx.level++;
+        s += indent() + "body=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.body.size(); i++) {
+                node.body[i]->accept(*this);
+                s += ctx.s;
+                s += ",\n";
+            }
+            ctx.level--;
         }
+        s += indent() + "],\n";
+
+        s += indent() + "type_ignores=[\n";
+        {
+            ctx.level++;
+            ctx.level--;
+        }
+        s += indent() + "],\n";
+        ctx.level--;
     }
-    ctx.level--;
-    s += indent() + "]\n";
     s += indent() + ")";
-    ctx.level--;
     ctx.s = s;
 }
 
@@ -48,48 +57,64 @@ void PrettyPrinter::visit(While& node) {
 
 void PrettyPrinter::visit(If& node) {
     string s = indent() + "If(\n";
-    ctx.level++;
-    printf("indent level: %d\n", ctx.level);
-    node.test->accept(*this);
-    s += indent() + "test=" + ctx.s + ",\n";
-    s += indent() + "body=[\n";
-    ctx.level++;
-    for (size_t i = 0; i < node.body.size(); i++) {
-        node.body[i]->accept(*this);
-        s += ctx.s;
-        if (i != node.body.size() - 1) {
-            s += ",\n";
+    {
+        ctx.level++;
+        node.test->accept(*this);
+        s += indent() + "test=" + ctx.s + ",\n";
+        s += indent() + "body=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.body.size(); i++) {
+                node.body[i]->accept(*this);
+                s += ctx.s;
+                s += ",\n";
+            }
+            ctx.level--;
         }
+        s += indent() + "]\n";
+
+        s += indent() + "orelse=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.orelse.size(); i++) {
+                node.orelse[i]->accept(*this);
+                s += ctx.s;
+                s += ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "],\n";
+        ctx.level--;
     }
-    ctx.level--;
-    ctx.level--;
+    s += indent() + ")";
     ctx.s = s;
 }
 
 void PrettyPrinter::visit(Expr& node) {
     string s = indent() + "Expr(\n";
-    ctx.level++;
-    s += indent() + "value=";
-    node.value->accept(*this);
-    s += ctx.s;
+    {
+        ctx.level++;
+        s += indent() + "value=";
+        node.value->accept(*this);
+        s += ctx.s + "\n";
+        ctx.level--;
+    }
     s += indent() + ")";
-    ctx.level--;
     ctx.s = s;
 }
 
 void PrettyPrinter::visit(BinOp& node) {
     string s = "BinOp(\n";
-    int level = ctx.level;
-    ctx.level = 0;
-    node.left->accept(*this);
-    ctx.level = level;
-    ctx.level++;
-    s += indent() + "left=" + ctx.s + ",\n";
-    s += indent() + "op=" + operatorToString(node.op) + ",\n";
-    node.right->accept(*this);
-    s += indent() + "right=" + ctx.s + "\n";
+    {
+        ctx.level++;
+        node.left->accept(*this);
+        s += indent() + "left=" + ctx.s + ",\n";
+        s += indent() + "op=" + operatorToString(node.op) + ",\n";
+        node.right->accept(*this);
+        s += indent() + "right=" + ctx.s + "\n";
+        ctx.level--;
+    }
     s += indent() + ")";
-    ctx.level--;
     ctx.s = s;
 }
 
