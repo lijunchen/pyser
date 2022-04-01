@@ -52,7 +52,39 @@ void PrettyPrinter::visit(Module& node) {
 }
 
 void PrettyPrinter::visit(While& node) {
+    string s = indent() + "While(\n";
+    {
+        ctx.level++;
+        node.test->accept(*this);
+        s += indent() + "test=" + ctx.s + ",\n";
+        s += indent() + "body=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.body.size(); i++) {
+                node.body[i]->accept(*this);
+                s += ctx.s;
+                s += ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "]\n";
 
+        s += indent() + "orelse=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.orelse.size(); i++) {
+                node.orelse[i]->accept(*this);
+                s += ctx.s;
+                s += ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "],\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+    printf("ast:\n%s\n", s.c_str());
 }
 
 void PrettyPrinter::visit(If& node) {
