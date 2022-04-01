@@ -8,6 +8,7 @@ using std::vector;
 
 class Tokenizer{
 public:
+    Tokenizer(): p(0) {}
     vector<Token> tokenize(const string& input);
     int mark() { return p; }
     void reset(int p) { this->p = p; }
@@ -22,7 +23,7 @@ public:
         p++;
         return peek();
     }
-private:
+public:
     vector<Token> tokens;
     int p;
 };

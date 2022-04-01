@@ -4,6 +4,8 @@
 #include <iostream>
 #include "AST.h"
 #include "PrettyPrinter.h"
+#include "Parser.h"
+#include <memory>
 
 using namespace std;
 
@@ -43,5 +45,11 @@ int main() {
     } catch (runtime_error& e) {
         printf("error: %s\n", e.what());
     }
+    string input = "while x:\n    1\n";
+    Parser parser;
+    unique_ptr<stmt> t = parser.parseWhile(input);
+    printf("while: %p\n", t.get());
+    PrettyPrinter pprint0;
+    t->accept(pprint0);
     return 0;
 }
