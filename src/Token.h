@@ -89,7 +89,7 @@ public:
 
     explicit operator bool() const { return type != TokenType::ENDMARKER; }
 
-    string toString() {
+    string toString() const {
         string s = tokenTypeToString(type) + ", " + raw;
         return s;
     }

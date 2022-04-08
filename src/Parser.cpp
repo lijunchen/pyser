@@ -141,7 +141,7 @@ optional<stmtPs> Parser::simple_stmts() {
 
 stmtP Parser::simple_stmt() {
     int p = mark();
-    if (exprP e = atom()) {
+    if (exprP e = pratt_parser()) {
         return make_unique<Expr>(move(e));
     }
     reset(p);
@@ -150,16 +150,16 @@ stmtP Parser::simple_stmt() {
 
 exprP Parser::atom() {
     int p = mark();
+    const Token& t = peek();
     printf("atom rule\n");
-    const Token& tok = peek();
-    if (expect(TokenType::NUMBER)) {
-        return make_unique<Num>(tok.raw);
+    if (const Token& t = expectT(TokenType::NUMBER)) {
+        return make_unique<Num>(t.raw);
     }
-    if (expect(TokenType::STRING)) {
-        return make_unique<Str>(tok.raw, nullopt);
+    if (const Token& t = expectT(TokenType::STRING)) {
+        return make_unique<Str>(t.raw, nullopt);
     }
-    if (expect(TokenType::NAME)) {
-        return make_unique<Name>(tok.raw, expr_context::Load);
+    if (const Token& t = expectT(TokenType::NAME)) {
+        return make_unique<Name>(t.raw, expr_context::Load);
     }
     reset(p);
     return nullptr;

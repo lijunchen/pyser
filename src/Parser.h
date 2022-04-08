@@ -20,9 +20,14 @@ using std::optional;
 
 class Token;
 
+void initBindingPowerTables();
+
 class Parser {
 public:
-    Parser() {}
+    Parser() {
+        initBindingPowerTables();
+    }
+    
     unique_ptr<ast> parse(const string& input) {
         tokenizer.tokens = tokenizer.tokenize(input);
         return while_stmt();
@@ -31,7 +36,7 @@ public:
     stmtP parseWhile(const string& input) {
         tokenizer.tokens = tokenizer.tokenize(input);
         reset(0);
-        printf("parseWhile, tokens size: %d\n", tokenizer.tokens.size());
+        printf("parseWhile, tokens size: %lu\n", tokenizer.tokens.size());
         for (auto& t : tokenizer.tokens) {
             printf("%s\n", t.toString().c_str());
         }
@@ -47,6 +52,16 @@ private:
             return true;
         } else {
             return false;
+        }
+    }
+
+    Token expectT(TokenType type) {
+        Token t = peek();
+        if (t.type == type) {
+            next();
+            return t;
+        } else {
+            return Token();
         }
     }
 
@@ -75,6 +90,9 @@ private:
     exprP expression();
     exprP atom();
 
+    exprP pratt_parser();
+    exprP pratt_parser_bp(int minBP);
+
 private:
     int mark() { return tokenizer.mark(); }
     void reset(int p) { tokenizer.reset(p); }
@@ -82,6 +100,5 @@ private:
     Token next() { return tokenizer.next(); }
     Tokenizer tokenizer;
 };
-
 
 #endif /* PARSER_H */
