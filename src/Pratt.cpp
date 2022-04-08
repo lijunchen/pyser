@@ -23,66 +23,66 @@ public:
     optional<int> right;
 };
 
-enum BindingType { PREFIX, POSTFIX, INFIX };
-enum AssocType { LEFT, RIGHT };
+enum class Fix { Pre, Post, In };
+enum class Assoc { Non, Left, Right };
 
-string assocTypeToString(AssocType at) {
-    if (at == LEFT) {
-        return "LEFT";
+string assocTypeToString(Assoc at) {
+    if (at == Assoc::Left) {
+        return "Assoc::Left";
     }
-    return "RIGHT";
+    return "Assoc::Right";
 }
 
 unordered_map<TokenType, optional<BindingPower>> infixTable;
 unordered_map<TokenType, optional<BindingPower>> prefixTable;
 unordered_map<TokenType, optional<BindingPower>> postfixTable;
 
-vector<tuple<BindingType, AssocType, vector<TokenType>>> table = {
+vector<tuple<Fix, Assoc, vector<TokenType>>> table = {
     // Precedence from low to high
 
-    { INFIX, LEFT, { TokenType::EQEQUAL,
+    { Fix::In, Assoc::Left, { TokenType::EQEQUAL,
                 TokenType::NOTEQUAL,
                 TokenType::LESSEQUAL,
                 TokenType::LESS,
                 TokenType::GREATEREQUAL,
                 TokenType::GREATER } },
 
-    { INFIX, LEFT, { TokenType::VBAR } },       // |
-    { INFIX, LEFT, { TokenType::CIRCUMFLEX } }, // ^
-    { INFIX, LEFT, { TokenType::AMPER } },      // &
+    { Fix::In, Assoc::Left, { TokenType::VBAR } },       // |
+    { Fix::In, Assoc::Left, { TokenType::CIRCUMFLEX } }, // ^
+    { Fix::In, Assoc::Left, { TokenType::AMPER } },      // &
 
-    { INFIX, LEFT, { TokenType::LEFTSHIFT,
+    { Fix::In, Assoc::Left, { TokenType::LEFTSHIFT,
                TokenType::RIGHTSHIFT } },
 
-    { INFIX, LEFT, { TokenType::PLUS,
+    { Fix::In, Assoc::Left, { TokenType::PLUS,
                 TokenType::MINUS } },
 
-    { INFIX, LEFT, { TokenType::STAR,
+    { Fix::In, Assoc::Left, { TokenType::STAR,
                 TokenType::SLASH,
                 TokenType::DOUBLESLASH,
                 TokenType::PERCENT,
                 TokenType::AT } },
 
-    { PREFIX, LEFT, { TokenType::PLUS } },
-    { PREFIX, LEFT, { TokenType::MINUS } },
-    { PREFIX, LEFT, { TokenType::TILDE } },
+    { Fix::Pre, Assoc::Non, { TokenType::PLUS } },
+    { Fix::Pre, Assoc::Non, { TokenType::MINUS } },
+    { Fix::Pre, Assoc::Non, { TokenType::TILDE } },
 
-    { INFIX, RIGHT, { TokenType::DOUBLESTAR } },
+    { Fix::In, Assoc::Right, { TokenType::DOUBLESTAR } },
 
-    { POSTFIX, LEFT, { TokenType::DOT } },
-    { POSTFIX, LEFT, { TokenType::LPAR } },
-    { POSTFIX, LEFT, { TokenType::LSQB } },
+    { Fix::Post, Assoc::Non, { TokenType::DOT } },
+    { Fix::Post, Assoc::Non, { TokenType::LPAR } },
+    { Fix::Post, Assoc::Non, { TokenType::LSQB } },
 };
 
 void initBindingPowerTables() {
     printf("initBindingPowerTables\n");
     for (int i = 0; i < table.size(); i++) {
-        BindingType bt = std::get<0>(table[i]);
-        AssocType at = std::get<1>(table[i]);
+        Fix bt = std::get<0>(table[i]);
+        Assoc at = std::get<1>(table[i]);
         vector<TokenType> tts = std::get<2>(table[i]);
-        if (bt == INFIX) {
+        if (bt == Fix::In) {
             for (TokenType tt : tts) {
-                if (at == LEFT) {
+                if (at == Assoc::Left) {
                     infixTable[tt] = BindingPower(i, i + 1);
                     printf("infix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i, i + 1);
                 } else {
@@ -90,12 +90,12 @@ void initBindingPowerTables() {
                     printf("infix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i + 1, i);
                 }
             }
-        } else if (bt == PREFIX) {
+        } else if (bt == Fix::Pre) {
             for (TokenType tt : tts) {
                 prefixTable[tt] = BindingPower(nullopt, i);
                 printf("prefix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i, i + 1);
             }
-        } else if (bt == POSTFIX) {
+        } else if (bt == Fix::Post) {
             for (TokenType tt : tts) {
                 postfixTable[tt] = BindingPower(i, nullopt);
                 printf("postfix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i, i + 1);
