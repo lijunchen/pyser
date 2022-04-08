@@ -26,11 +26,26 @@ public:
 enum class Fix { Pre, Post, In };
 enum class Assoc { Non, Left, Right };
 
-string assocTypeToString(Assoc at) {
-    if (at == Assoc::Left) {
-        return "Assoc::Left";
+string fixToString(Fix f) {
+    switch (f) {
+    case Fix::Pre:
+        return "prefix";
+    case Fix::Post:
+        return "postfix";
+    case Fix::In:
+        return "infix";
     }
-    return "Assoc::Right";
+}
+
+string assocToString(Assoc at) {
+    switch (at) {
+    case Assoc::Non:
+        return "non";
+    case Assoc::Left:
+        return "left";
+    case Assoc::Right:
+        return "right";
+    }
 }
 
 unordered_map<TokenType, optional<BindingPower>> infixTable;
@@ -84,21 +99,21 @@ void initBindingPowerTables() {
             for (TokenType tt : tts) {
                 if (at == Assoc::Left) {
                     infixTable[tt] = BindingPower(i, i + 1);
-                    printf("infix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i, i + 1);
+                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i, i + 1);
                 } else {
                     infixTable[tt] = BindingPower(i + 1, i);
-                    printf("infix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i + 1, i);
+                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i + 1, i);
                 }
             }
         } else if (bt == Fix::Pre) {
             for (TokenType tt : tts) {
                 prefixTable[tt] = BindingPower(nullopt, i);
-                printf("prefix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i, i + 1);
+                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i, i + 1);
             }
         } else if (bt == Fix::Post) {
             for (TokenType tt : tts) {
                 postfixTable[tt] = BindingPower(i, nullopt);
-                printf("postfix %s %s %d %d\n", tokenTypeToString(tt).c_str(), assocTypeToString(at).c_str(), i, i + 1);
+                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i, i + 1);
             }
         }
     }
