@@ -45,7 +45,7 @@ int main() {
     } catch (runtime_error& e) {
         printf("error: %s\n", e.what());
     }
-    string input = "while x:\n    1\n";
+    string input = "while x:\n    -x-1 + 2**y**z\n";
     Parser parser;
     unique_ptr<stmt> t = parser.parseWhile(input);
     printf("while: %p\n", t.get());

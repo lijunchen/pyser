@@ -23,6 +23,17 @@ string PrettyPrinter::operatorToString(operator_ op) {
     return "InvalidOperator";
 }
 
+string PrettyPrinter::unaryopToString(unaryop op) {
+    switch (op) {
+        case unaryop::Invert: return "Invert()";
+        case unaryop::Not: return "Not()";
+        case unaryop::UAdd: return "UAdd()";
+        case unaryop::USub: return "USub()";
+        default: break;
+    }
+    return "InvalidUnaryOperator";
+}
+
 void PrettyPrinter::visit(Module& node) {
     string s = "Module(\n";
     {
@@ -144,6 +155,19 @@ void PrettyPrinter::visit(BinOp& node) {
         s += indent() + "op=" + operatorToString(node.op) + ",\n";
         node.right->accept(*this);
         s += indent() + "right=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(UnaryOp& node) {
+    string s = "UnaryOp(\n";
+    {
+        ctx.level++;
+        s += indent() + "op=" + unaryopToString(node.op) + ",\n";
+        node.operand->accept(*this);
+        s += indent() + "operand=" + ctx.s + "\n";
         ctx.level--;
     }
     s += indent() + ")";

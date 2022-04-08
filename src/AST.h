@@ -54,6 +54,14 @@ public:
     stmtPs body;
 };
 
+class Assign: public stmt {
+public:
+    Assign(exprPs targets, exprP value): targets(move(targets)), value(move(value)) {}
+public:
+    exprPs targets;
+    exprP value;
+};
+
 class While: public stmt {
 public:
     While(exprP test, stmtPs body, stmtPs orelse)
@@ -96,6 +104,16 @@ public:
     exprP left;
     operator_ op;
     exprP right;
+};
+
+class UnaryOp: public expr {
+public:
+    UnaryOp(unaryop op, exprP operand): op(op), operand(move(operand)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+public:
+    unaryop op;
+    exprP operand;
 };
 
 class Num: public expr {

@@ -17,6 +17,7 @@ public:
 public:
     string indent() { return string(ctx.level * 4, ' '); }
     string operatorToString(operator_ op);
+    string unaryopToString(unaryop op);
     virtual void visit(Module&) override;
     virtual void visit(Interactive&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Expression&) override { throw runtime_error("not imp yet"); };
@@ -50,7 +51,7 @@ public:
     virtual void visit(BoolOp&) override { throw runtime_error("not imp yet"); };
     virtual void visit(NamedExpr&) override { throw runtime_error("not imp yet"); };
     virtual void visit(BinOp&) override;
-    virtual void visit(UnaryOp&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(UnaryOp&) override;
     virtual void visit(Lambda&) override { throw runtime_error("not imp yet"); };
     virtual void visit(IfExp&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Dict&) override { throw runtime_error("not imp yet"); };
