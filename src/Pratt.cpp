@@ -56,6 +56,9 @@ vector<tuple<Fix, Assoc, vector<Token>>> table = {
     // Precedence from low to high
 
     { Fix::In, Assoc::Left, { Token(Token::Type::COMMA, ",") }},
+
+    { Fix::Pre, Assoc::Non, { Token(Token::Type::STAR, "*") }},
+
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "if") }},
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
@@ -167,7 +170,10 @@ exprP Parser::pratt_parser_bp(int minBP) {
     if (optional<BindingPower> bp = prefix_binding_power(tok)) {
         next();
         exprP rhs = pratt_parser_bp(*bp->right);
-        if (tok.type == Token::Type::PLUS) {
+        if (tok.type == Token::Type::STAR) {
+            optional<BindingPower> bitwiseOrBP = infix_binding_power(Token(Token::Type::VBAR, "|"));
+            lhs = make_unique<Starred>(move(rhs), expr_context::Load);
+        } else if (tok.type == Token::Type::PLUS) {
             lhs = make_unique<UnaryOp>(unaryop::UAdd, move(rhs));
         } else if (tok.type == Token::Type::MINUS) {
             lhs = make_unique<UnaryOp>(unaryop::USub, move(rhs));

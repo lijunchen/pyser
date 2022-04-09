@@ -455,7 +455,20 @@ void PrettyPrinter::visit(Dict& node) {}
 void PrettyPrinter::visit(Set& node) {}
 void PrettyPrinter::visit(Yield& node) {}
 void PrettyPrinter::visit(YieldFrom& node) {}
-void PrettyPrinter::visit(Starred& node) {}
+
+void PrettyPrinter::visit(Starred& node) {
+    string s = "Starred(\n";
+    {
+        ctx.level++;
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + "\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
 void PrettyPrinter::visit(arguments& node) {}
 void PrettyPrinter::visit(arg& node) {}
 void PrettyPrinter::visit(alias& node) {}
