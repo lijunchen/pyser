@@ -187,4 +187,73 @@ public:
     exprP value;
 };
 
+class Attribute: public expr {
+public:
+    Attribute(exprP value, const string& attr, expr_context ctx): value(move(value)), attr(attr), ctx(ctx) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprP value;
+    string attr;
+    expr_context ctx;
+};
+
+class Subscript: public expr {
+public:
+    Subscript(exprP value, exprP slice, expr_context ctx): value(move(value)), slice(move(slice)), ctx(ctx) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprP value;
+    exprP slice;
+    expr_context ctx;
+};
+
+class Call: public expr {
+public:
+    Call(exprP func, exprPs args, vector<unique_ptr<keyword>> keywords): func(move(func)), args(move(args)), keywords(move(keywords)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprP func;
+    exprPs args;
+    vector<unique_ptr<keyword>> keywords;
+};
+
+
+
+class List: public expr {
+public:
+    List(exprPs elts, expr_context ctx): elts(move(elts)), ctx(ctx) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprPs elts;
+    expr_context ctx;
+};
+
+class Tuple: public expr {
+public:
+    Tuple(exprPs elts, expr_context ctx): elts(move(elts)), ctx(ctx) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprPs elts;
+    expr_context ctx;
+};
+
+class Slice: public expr {
+public:
+    Slice(exprP lower, exprP upper, exprP step): lower(move(lower)), upper(move(upper)), step(move(step)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprP lower;
+    exprP upper;
+    exprP step;
+};
+
+class keyword {
+public:
+    keyword(const string& arg, exprP value): arg(arg), value(move(value)) {}
+    virtual void accept(Visitor& visitor) { visitor.visit(*this); }
+public:
+    optional<string> arg;
+    exprP value;
+};
+
 #endif /* AST_H */

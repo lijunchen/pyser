@@ -110,7 +110,10 @@ public:
                type == Token::Type::VBAR ||
                type == Token::Type::CIRCUMFLEX ||
                type == Token::Type::AMPER ||
-               type == Token::Type::DOUBLESLASH;
+               type == Token::Type::DOUBLESLASH ||
+               type == Token::Type::DOT ||
+               type == Token::Type::LPAR ||
+               type == Token::Type::LSQB;
     }
 
     bool is_boolop() const {

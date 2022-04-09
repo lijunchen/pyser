@@ -2,6 +2,20 @@
 #include "AST.h"
 #include "PrettyPrinter.h"
 
+string PrettyPrinter::contextToString(expr_context ctx) {
+    switch (ctx) {
+        case expr_context::Load:
+            return "Load()";
+        case expr_context::Store:
+            return "Store()";
+        case expr_context::Del:
+            return "Del()";
+        default:
+            break;
+    }
+    return "InvalidContext";
+}
+
 // Add, Sub, Mult, MatMult, Div, Mod, Pow, LShift, RShift, BitOr, BitXor, BitAnd, FloorDiv 
 string PrettyPrinter::operatorToString(operator_ op) {
     switch (op) {
@@ -275,15 +289,7 @@ void PrettyPrinter::visit(None& node) {
 }
 
 void PrettyPrinter::visit(Name& node) {
-    string context;
-    if (node.ctx == expr_context::Load) {
-        context = "Load()";
-    } else if (node.ctx == expr_context::Store) {
-        context = "Store()";
-    } else {
-        context = "Del()";
-    }
-    ctx.s = "Name(id='" + node.id+ "', ctx=" + context + ")";
+    ctx.s = "Name(id='" + node.id+ "', ctx=" + contextToString(node.ctx) + ")";
 }
 
 void PrettyPrinter::visit(Await& node) {
@@ -292,6 +298,116 @@ void PrettyPrinter::visit(Await& node) {
         ctx.level++;
         node.value->accept(*this);
         s += indent() + "value=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(Attribute& node) {
+    string s = "Attribute(\n";
+    {
+        ctx.level++;
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + ",\n";
+        s += indent() + "attr='" + node.attr + "',\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(Subscript& node) {
+    string s = "Subscript(\n";
+    {
+        ctx.level++;
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + ",\n";
+        node.slice->accept(*this);
+        s += indent() + "slice=" + ctx.s + "\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(Call& node) {
+    string s = "Call(\n";
+    {
+        ctx.level++;
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(keyword& node) {
+    string s = "keyword(\n";
+    {
+        ctx.level++;
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(List& node) {
+    string s = "List(\n";
+    {
+        ctx.level++;
+        s += indent() + "elts=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.elts.size(); i++) {
+                node.elts[i]->accept(*this);
+                s += indent() + ctx.s + ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "]\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(Tuple& node) {
+    string s = "Tuple(\n";
+    {
+        ctx.level++;
+        s += indent() + "elts=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.elts.size(); i++) {
+                node.elts[i]->accept(*this);
+                s += indent() + ctx.s + ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "]\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(Slice& node) {
+    string s = "Slice(\n";
+    {
+        ctx.level++;
+        string lo = "None";
+        if (node.lower) { node.lower->accept(*this); lo = ctx.s; }
+        s += indent() + "lower=" + lo + ",\n";
+        string hi = "None";
+        if (node.upper) { node.upper->accept(*this); hi = ctx.s; }
+        s += indent() + "upper=" + hi + ",\n";
+        string st = "None";
+        if (node.step) { node.step->accept(*this); st = ctx.s;}
+        s += indent() + "step=" + st + "\n";
         ctx.level--;
     }
     s += indent() + ")";

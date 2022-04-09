@@ -17,6 +17,7 @@ public:
 public:
     string indent() { return string(ctx.level * 4, ' '); }
 public:
+    string contextToString(expr_context ctx);
     string operatorToString(operator_ op);
     string unaryopToString(unaryop op);
     string boolopToString(boolop op);
@@ -69,7 +70,7 @@ public:
     virtual void visit(Yield&) override { throw runtime_error("not imp yet"); };
     virtual void visit(YieldFrom&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Compare&) override;
-    virtual void visit(Call&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(Call&) override;
     virtual void visit(FormattedValue&) override { throw runtime_error("not imp yet"); };
     virtual void visit(JoinedStr&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Constant&) override { throw runtime_error("not imp yet"); };
@@ -77,18 +78,18 @@ public:
     virtual void visit(Num&) override;
     virtual void visit(Bool&) override;
     virtual void visit(None&) override;
-    virtual void visit(Attribute&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(Subscript&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(Attribute&) override;
+    virtual void visit(Subscript&) override;
     virtual void visit(Starred&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Name&) override;
-    virtual void visit(List&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(Tuple&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(Slice&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(List&) override;
+    virtual void visit(Tuple&) override;
+    virtual void visit(Slice&) override;
     virtual void visit(comprehension&) override { throw runtime_error("not imp yet"); };
     virtual void visit(exceptHandler&) override { throw runtime_error("not imp yet"); };
     virtual void visit(arguments&) override { throw runtime_error("not imp yet"); };
     virtual void visit(arg&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(keyword&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(keyword&) override;
     virtual void visit(alias&) override { throw runtime_error("not imp yet"); };
     virtual void visit(withitem&) override { throw runtime_error("not imp yet"); };
     virtual void visit(match_case&) override { throw runtime_error("not imp yet"); };

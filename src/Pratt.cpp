@@ -103,9 +103,9 @@ vector<tuple<Fix, Assoc, vector<Token>>> table = {
 
     { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "await") }},
 
-    { Fix::Post, Assoc::Non, { Token(Token::Type::DOT, ".") } },
-    { Fix::Post, Assoc::Non, { Token(Token::Type::LPAR, "(") } },
-    { Fix::Post, Assoc::Non, { Token(Token::Type::LSQB, ")") } },
+    { Fix::In, Assoc::Left, { Token(Token::Type::DOT, ".") } },
+    { Fix::In, Assoc::Left, { Token(Token::Type::LPAR, "(") } },
+    { Fix::In, Assoc::Left, { Token(Token::Type::LSQB, ")") } },
 };
 
 void initBindingPowerTables() {
@@ -205,17 +205,42 @@ exprP Parser::pratt_parser_bp(int minBP) {
         next();
         if (t.is_operator()) {
             operator_ op{};
+            bool done = false;
             switch (t.type) {
                 case Token::Type::PLUS: op = operator_::Add; break;
                 case Token::Type::MINUS: op = operator_::Sub; break;
                 case Token::Type::STAR: op = operator_::Mult; break;
                 case Token::Type::SLASH: op = operator_::Div; break;
                 case Token::Type::DOUBLESTAR: op = operator_::Pow; break;
+                case Token::Type::DOT: {
+                    if (const Token& attr = expectT(Token::Type::NAME)) {
+                        lhs = make_unique<Attribute>(move(lhs), attr.raw, expr_context::Load);
+                        done = true;
+                    }
+                }
+                case Token::Type::LPAR: {
+                    break;
+                }
+                case Token::Type::LSQB: {
+                    exprP rhs = slices();
+                    if (rhs) {
+                        lhs = make_unique<Subscript>(move(lhs), move(rhs), expr_context::Load);
+                        if (expect(Token::Type::RSQB)) {
+                            done = true;
+                            break;
+                        } else {
+                            throw std::runtime_error("expect ]");
+                        }
+                    }
+                    break;
+                }
                 default:
                     break;
             }
-            exprP rhs = pratt_parser_bp(*bp->right);
-            lhs = make_unique<BinOp>(std::move(lhs), op, std::move(rhs));
+            if (!done) {
+                exprP rhs = pratt_parser_bp(*bp->right);
+                lhs = make_unique<BinOp>(std::move(lhs), op, std::move(rhs));
+            }
         } else if (t.is_boolop()) {
             boolop op{};
             if (t.raw == "and") {
