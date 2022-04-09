@@ -285,3 +285,15 @@ void PrettyPrinter::visit(Name& node) {
     }
     ctx.s = "Name(id='" + node.id+ "', ctx=" + context + ")";
 }
+
+void PrettyPrinter::visit(Await& node) {
+    string s = "Await(\n";
+    {
+        ctx.level++;
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}

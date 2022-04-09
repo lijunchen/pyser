@@ -65,7 +65,7 @@ public:
     virtual void visit(SetComp&) override { throw runtime_error("not imp yet"); };
     virtual void visit(DictComp&) override { throw runtime_error("not imp yet"); };
     virtual void visit(GeneratorExp&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(Await&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(Await&) override;
     virtual void visit(Yield&) override { throw runtime_error("not imp yet"); };
     virtual void visit(YieldFrom&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Compare&) override;

@@ -179,4 +179,12 @@ public:
     expr_context ctx;
 };
 
+class Await: public expr {
+public:
+    Await(exprP value): value(move(value)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprP value;
+};
+
 #endif /* AST_H */
