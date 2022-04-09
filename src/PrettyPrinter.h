@@ -90,8 +90,8 @@ public:
     virtual void visit(arguments&) override;
     virtual void visit(arg&) override;
     virtual void visit(keyword&) override;
-    virtual void visit(alias&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(withitem&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(alias&) override;
+    virtual void visit(withitem&) override;
     virtual void visit(match_case&) override { throw runtime_error("not imp yet"); };
     virtual void visit(MatchValue&) override { throw runtime_error("not imp yet"); };
     virtual void visit(MatchSingleton&) override { throw runtime_error("not imp yet"); };

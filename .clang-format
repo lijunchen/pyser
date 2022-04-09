@@ -1,4 +1,6 @@
 PointerAlignment: Left
 AccessModifierOffset: -4
 IndentWidth: 4
-ColumnLimit: 128
+ColumnLimit: 80
+SpaceBeforeCtorInitializerColon: false
+SpaceBeforeInheritanceColon: false
