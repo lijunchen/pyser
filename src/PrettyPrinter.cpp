@@ -434,7 +434,23 @@ void PrettyPrinter::visit(Pass& node) {}
 void PrettyPrinter::visit(Break& node) {}
 void PrettyPrinter::visit(Continue& node) {}
 void PrettyPrinter::visit(Lambda& node) {}
-void PrettyPrinter::visit(IfExp& node) {}
+
+void PrettyPrinter::visit(IfExp& node) {
+    string s = "IfExp(\n";
+    {
+        ctx.level++;
+        node.test->accept(*this);
+        s += indent() + "test=" + ctx.s + ",\n";
+        node.body->accept(*this);
+        s += indent() + "body=" + ctx.s + ",\n";
+        node.orelse->accept(*this);
+        s += indent() + "orelse=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
 void PrettyPrinter::visit(Dict& node) {}
 void PrettyPrinter::visit(Set& node) {}
 void PrettyPrinter::visit(Yield& node) {}

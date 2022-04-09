@@ -53,6 +53,8 @@ int main() {
     input = "while x:\n    await True\n";
     input = "while x:\n    a.b.c\n";
     input = "while x:\n    a[a, a:b, a:b:c]\n";
+    input = "1,2,3\n";
+    input = "1 if 2 else a, b, c\n";
     Parser parser;
     unique_ptr<Module> t = parser.parse(input);
     printf("while: %p\n", t.get());
