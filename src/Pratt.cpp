@@ -101,6 +101,8 @@ vector<tuple<Fix, Assoc, vector<Token>>> table = {
 
     { Fix::In, Assoc::Right, { Token(Token::Type::DOUBLESTAR, "**") } },
 
+    { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "await") }},
+
     { Fix::Post, Assoc::Non, { Token(Token::Type::DOT, ".") } },
     { Fix::Post, Assoc::Non, { Token(Token::Type::LPAR, "(") } },
     { Fix::Post, Assoc::Non, { Token(Token::Type::LSQB, ")") } },
@@ -173,8 +175,12 @@ exprP Parser::pratt_parser_bp(int minBP) {
             lhs = make_unique<UnaryOp>(unaryop::USub, move(rhs));
         } else if (tok.type == Token::Type::TILDE) {
             lhs = make_unique<UnaryOp>(unaryop::Invert, move(rhs));
-        } else if (tok.type == Token::Type::NAME && tok.raw == "not") {
-            lhs = make_unique<UnaryOp>(unaryop::Not, move(rhs));
+        } else if (tok.type == Token::Type::NAME) {
+            if (tok.raw == "not") {
+                lhs = make_unique<UnaryOp>(unaryop::Not, move(rhs));
+            } else if (tok.raw == "await") {
+                lhs = make_unique<Await>(move(rhs));
+            }
         }
     } else {
         lhs = atom();
