@@ -55,6 +55,8 @@ unordered_map<Token, optional<BindingPower>> postfixTable;
 vector<tuple<Fix, Assoc, vector<Token>>> table = {
     // Precedence from low to high
 
+    { Fix::In, Assoc::Left, { Token(Token::Type::COMMA, ",") }},
+    { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "if") }},
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
 
@@ -119,21 +121,17 @@ void initBindingPowerTables() {
             for (const Token& t : ts) {
                 if (at == Assoc::Left) {
                     infixTable[t] = BindingPower(l * 2 - 1, l * 2);
-                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(), assocToString(at).c_str(), l * 2 - 1, l * 2);
                 } else {
                     infixTable[t] = BindingPower(l * 2, l * 2 - 1);
-                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(), assocToString(at).c_str(), l * 2, l * 2 - 1);
                 }
             }
         } else if (bt == Fix::Pre) {
             for (const Token& t : ts) {
                 prefixTable[t] = BindingPower(nullopt, l * 2);
-                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(), assocToString(at).c_str(), -1, l * 2);
             }
         } else if (bt == Fix::Post) {
             for (const Token& t : ts) {
                 postfixTable[t] = BindingPower(l * 2, nullopt);
-                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(),  assocToString(at).c_str(), l * 2, -1);
             }
         }
     }
@@ -306,6 +304,23 @@ exprP Parser::pratt_parser_bp(int minBP) {
                 comparators.push_back(move(rhs));
                 lhs = make_unique<Compare>(move(lhs), ops, move(comparators));
             }
+        } else if (t.type == Token::Type::COMMA) {
+            exprP rhs = pratt_parser_bp(*bp->right);
+            if (Tuple* p = dynamic_cast<Tuple*>(lhs.get())) {
+                p->elts.push_back(move(rhs));
+            } else {
+                vector<exprP> elts;
+                elts.push_back(move(lhs));
+                elts.push_back(move(rhs));
+                lhs = make_unique<Tuple>(move(elts), expr_context::Load);
+            }
+        } else if (t.type == Token::Type::NAME && t.raw == "if") {
+            exprP test = pratt_parser_bp(*bp->right);
+            if (!expect("else")) {
+                throw std::runtime_error("expect else in if expr");
+            }
+            exprP orelse = pratt_parser_bp(*bp->right);
+            lhs = make_unique<IfExp>(move(test), move(lhs), move(orelse));
         } else {
             break;
         }

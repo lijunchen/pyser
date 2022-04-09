@@ -246,8 +246,23 @@ stmtP Parser::simple_stmt() {
     return nullptr;
 }
 
-stmtP Parser::assignment() { return nullptr; }
+// assignment:
+//     | NAME ':' expression ['=' annotated_rhs ] 
+//     | ('(' single_target ')' 
+//          | single_subscript_attribute_target) ':' expression ['=' annotated_rhs ] 
+//     | (star_targets '=' )+ (yield_expr | star_expressions) !'=' [TYPE_COMMENT] 
+//     | single_target augassign ~ (yield_expr | star_expressions) 
+stmtP Parser::assignment() {
+    int p = mark();
 
+    reset(p);
+    return nullptr;
+}
+
+// star_expressions:
+//     | star_expression (',' star_expression )+ [','] 
+//     | star_expression ',' 
+//     | star_expression
 stmtP Parser::star_expressions() {
     int p = mark();
     if (exprP e = pratt_parser()) {
@@ -256,6 +271,11 @@ stmtP Parser::star_expressions() {
     reset(p);
     return nullptr;
 }
+
+// star_expression:
+//     | '*' bitwise_or 
+//     | expression
+// stmtP Parser::star_expression() {}
 
 stmtP Parser::return_stmt() { return nullptr; }
 

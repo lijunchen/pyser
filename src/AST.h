@@ -458,9 +458,13 @@ public:
 
 class IfExp: public expr {
 public:
+    IfExp(exprP test, exprP body, exprP orelse): test(move(test)), body(move(body)), orelse(move(orelse)) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
+    exprP test;
+    exprP body;
+    exprP orelse;
 };
 
 class Dict: public expr {
