@@ -186,3 +186,54 @@ exprP Parser::atom() {
     reset(p);
     return nullptr;
 }
+
+exprP Parser::slices() {
+    int p = mark();
+    exprP s;
+
+    if ((s = slice()) && !lookahead(Token::Type::COMMA)) {
+        return s;
+    }
+
+    reset(p);
+    exprPs ss;
+    if ((s = slice()) && lookahead(Token::Type::COMMA)) {
+        ss.push_back(move(s));
+        int p1 = mark();
+        while ((p1 = mark()) && expect(Token::Type::COMMA) && (s = slice())) {
+            ss.push_back(move(s));
+        }
+        reset(p1);
+        expect(Token::Type::COMMA);
+        return make_unique<Tuple>(move(ss), expr_context::Load);
+    }
+
+    reset(p);
+    return nullptr;
+}
+
+exprP Parser::slice() {
+    int p = mark();
+    exprP lower;
+    exprP upper;
+    exprP step;
+
+    if ((lower = pratt_parser(), true) && expect(Token::Type::COLON)) {
+        if ((upper = pratt_parser(), true)) {
+            if (expect(Token::Type::COLON) && (step = pratt_parser(), true)) {
+                return make_unique<Slice>(move(lower), move(upper), move(step));
+            }
+            return make_unique<Slice>(move(lower), move(upper), nullptr);
+        }
+        return make_unique<Slice>(move(lower), nullptr, nullptr);
+    }
+    reset(p);
+
+    exprP e;
+    if (exprP e = pratt_parser()) {
+        return e;
+    }
+
+    reset(p);
+    return nullptr;
+}

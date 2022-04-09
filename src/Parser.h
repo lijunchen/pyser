@@ -48,7 +48,8 @@ public:
 private:
 
     bool expect(Token::Type type) {
-        Token t = peek();
+        const Token& t = peek();
+        printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
         if (t.type == type) {
             next();
             return true;
@@ -58,7 +59,8 @@ private:
     }
 
     Token expectT(Token::Type type) {
-        Token t = peek();
+        const Token& t = peek();
+        printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
         if (t.type == type) {
             next();
             return t;
@@ -68,14 +70,24 @@ private:
     }
 
     bool expect(const string& tok) {
-        Token t = peek();
-        if (t.type == Token::Type::NAME && t.raw == tok) {
+        const Token& t = peek();
+        if (t.raw == tok) {
             next();
             return true;
         } else {
             return false;
         }
     }
+
+    bool lookahead(Token::Type type) {
+        const Token& t = peek();
+        if (t.type == type) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     unique_ptr<Module> file();
     optional<stmtPs> statements();
     stmtP statement();
@@ -94,6 +106,9 @@ private:
 
     exprP pratt_parser();
     exprP pratt_parser_bp(int minBP);
+
+    exprP slices();
+    exprP slice();
 
 private:
     int mark() { return tokenizer.mark(); }

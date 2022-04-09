@@ -51,6 +51,8 @@ int main() {
     input = "while x:\n    True is None\n";
     input = "while x:\n    1 + 'a' + None + True\n";
     input = "while x:\n    await True\n";
+    input = "while x:\n    a.b.c\n";
+    input = "while x:\n    a[a, a:b, a:b:c]\n";
     Parser parser;
     unique_ptr<stmt> t = parser.parseWhile(input);
     printf("while: %p\n", t.get());
