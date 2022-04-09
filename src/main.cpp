@@ -47,7 +47,7 @@ int main() {
     }
     string input = "while x:\n    -x-1 + 2**y**z and u\n";
     input = "while x:\n    a and b and c or c and not d or f\n";
-    input = "while x:\n    a < b > c == d is f in g\n";
+    input = "while x:\n    a < b > c == d is not e in f\n";
     Parser parser;
     unique_ptr<stmt> t = parser.parseWhile(input);
     printf("while: %p\n", t.get());
