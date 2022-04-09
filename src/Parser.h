@@ -30,9 +30,9 @@ public:
         initBindingPowerTables();
     }
     
-    unique_ptr<ast> parse(const string& input) {
+    unique_ptr<Module> parse(const string& input) {
         tokenizer.tokens = tokenizer.tokenize(input);
-        return while_stmt();
+        return file();
     }
 
     stmtP parseWhile(const string& input) {

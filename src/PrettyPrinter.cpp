@@ -98,6 +98,7 @@ void PrettyPrinter::visit(Module& node) {
     }
     s += indent() + ")";
     ctx.s = s;
+    printf("ast:\n%s\n", s.c_str());
 }
 
 void PrettyPrinter::visit(While& node) {
@@ -133,7 +134,6 @@ void PrettyPrinter::visit(While& node) {
     }
     s += indent() + ")";
     ctx.s = s;
-    printf("ast:\n%s\n", s.c_str());
 }
 
 void PrettyPrinter::visit(If& node) {
