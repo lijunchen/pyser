@@ -251,8 +251,8 @@ void PrettyPrinter::visit(Compare& node) {
 }
 
 void PrettyPrinter::visit(Str& node) {
-    ctx.s = "Str(value='";
-    ctx.s += node.value + "', ";
+    ctx.s = "Constant(value=";
+    ctx.s += node.value + ", ";
     ctx.s += "kind=";
     if (node.kind) {
         ctx.s += *node.kind;
@@ -263,7 +263,15 @@ void PrettyPrinter::visit(Str& node) {
 }
 
 void PrettyPrinter::visit(Num& node) {
-    ctx.s = "Num(value=" + node.value + ")";
+    ctx.s = "Constant(value=" + node.value + ", kind=None)";
+}
+
+void PrettyPrinter::visit(Bool& node) {
+    ctx.s = "Constant(value=" + node.value + ", kind=None)";
+}
+
+void PrettyPrinter::visit(None& node) {
+    ctx.s = "Constant(value=None, kind=None)";
 }
 
 void PrettyPrinter::visit(Name& node) {

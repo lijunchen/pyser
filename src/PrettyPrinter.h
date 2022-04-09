@@ -75,6 +75,8 @@ public:
     virtual void visit(Constant&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Str&) override;
     virtual void visit(Num&) override;
+    virtual void visit(Bool&) override;
+    virtual void visit(None&) override;
     virtual void visit(Attribute&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Subscript&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Starred&) override { throw runtime_error("not imp yet"); };

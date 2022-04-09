@@ -163,15 +163,25 @@ exprP Parser::atom() {
         return nullptr;
     }
     printf("atom rule\n");
-    if (const Token& t = expectT(Token::Type::NUMBER)) {
-        return make_unique<Num>(t.raw);
+    if (const Token& t = expectT(Token::Type::NAME)) {
+        if (t.raw == "True") {
+            return make_unique<Bool>("True");
+        }
+        if (t.raw == "False") {
+            return make_unique<Bool>("False");
+        }
+        if (t.raw == "None") {
+            return make_unique<None>();
+        }
+
+        printf("atom name: %s\n", t.raw.c_str());
+        return make_unique<Name>(t.raw, expr_context::Load);
     }
     if (const Token& t = expectT(Token::Type::STRING)) {
         return make_unique<Str>(t.raw, nullopt);
     }
-    if (const Token& t = expectT(Token::Type::NAME)) {
-        printf("atom name: %s\n", t.raw.c_str());
-        return make_unique<Name>(t.raw, expr_context::Load);
+    if (const Token& t = expectT(Token::Type::NUMBER)) {
+        return make_unique<Num>(t.raw);
     }
     reset(p);
     return nullptr;
