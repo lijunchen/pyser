@@ -413,3 +413,32 @@ void PrettyPrinter::visit(Slice& node) {
     s += indent() + ")";
     ctx.s = s;
 }
+
+void PrettyPrinter::visit(FunctionDef& node) {}
+void PrettyPrinter::visit(ClassDef& node) {}
+void PrettyPrinter::visit(Return& node) {}
+void PrettyPrinter::visit(Delete& node) {}
+void PrettyPrinter::visit(Assign& node) {}
+void PrettyPrinter::visit(AugAssign& node) {}
+void PrettyPrinter::visit(AnnAssign& node) {}
+void PrettyPrinter::visit(For& node) {}
+void PrettyPrinter::visit(With& node) {}
+void PrettyPrinter::visit(Raise& node) {}
+void PrettyPrinter::visit(Try& node) {}
+void PrettyPrinter::visit(Assert& node) {}
+void PrettyPrinter::visit(Import& node) {}
+void PrettyPrinter::visit(ImportFrom& node) {}
+void PrettyPrinter::visit(Global& node) {}
+void PrettyPrinter::visit(Nonlocal& node) {}
+void PrettyPrinter::visit(Pass& node) {}
+void PrettyPrinter::visit(Break& node) {}
+void PrettyPrinter::visit(Continue& node) {}
+void PrettyPrinter::visit(Lambda& node) {}
+void PrettyPrinter::visit(IfExp& node) {}
+void PrettyPrinter::visit(Dict& node) {}
+void PrettyPrinter::visit(Set& node) {}
+void PrettyPrinter::visit(Yield& node) {}
+void PrettyPrinter::visit(YieldFrom& node) {}
+void PrettyPrinter::visit(Starred& node) {}
+void PrettyPrinter::visit(arguments& node) {}
+void PrettyPrinter::visit(arg& node) {}
