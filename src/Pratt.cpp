@@ -197,7 +197,6 @@ exprP Parser::pratt_parser_bp(int minBP) {
             break;
         }
         next();
-        exprP rhs = pratt_parser_bp(*bp->right);
         if (t.is_operator()) {
             operator_ op{};
             switch (t.type) {
@@ -209,6 +208,7 @@ exprP Parser::pratt_parser_bp(int minBP) {
                 default:
                     break;
             }
+            exprP rhs = pratt_parser_bp(*bp->right);
             lhs = make_unique<BinOp>(std::move(lhs), op, std::move(rhs));
         } else if (t.is_boolop()) {
             boolop op{};
@@ -220,6 +220,7 @@ exprP Parser::pratt_parser_bp(int minBP) {
                 ; // impossible
             }
 
+            exprP rhs = pratt_parser_bp(*bp->right);
             BoolOp* p = dynamic_cast<BoolOp*>(lhs.get());
             if (p && p->op == op) {
                 p->values.push_back(move(rhs));
@@ -240,11 +241,21 @@ exprP Parser::pratt_parser_bp(int minBP) {
                 case Token::Type::GREATER: op = cmpop::Gt; break;
                 case Token::Type::GREATEREQUAL: op = cmpop::GtE; break;
                 case Token::Type::NAME: {
+                    const Token& t2 = peek();
+                    if (t.raw == "not" && t2.raw == "in") {
+                        op = cmpop::NotIn;
+                        break;
+                    }
                     if (t.raw == "in") {
                         op = cmpop::In;
                         break;
                     }
                     if (t.raw == "is") {
+                        if (t2.raw == "not") {
+                            next();
+                            op = cmpop::IsNot;
+                            break;
+                        }
                         op = cmpop::Is;
                         break;
                     }
@@ -252,6 +263,7 @@ exprP Parser::pratt_parser_bp(int minBP) {
                 default:
                     break;
             }
+            exprP rhs = pratt_parser_bp(*bp->right);
             Compare* p = dynamic_cast<Compare*>(lhs.get());
             if (p) {
                 p->ops.push_back(op);
