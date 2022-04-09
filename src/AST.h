@@ -497,9 +497,12 @@ public:
 
 class Starred: public expr {
 public:
+    Starred(exprP value, expr_context ctx): value(move(value)), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
+    exprP value;
+    expr_context ctx;
 };
 
 class keyword {
