@@ -53,6 +53,8 @@ class JoinedStr;
 class Constant;
 class Num;
 class Str;
+class Bool;
+class None;
 class Attribute;
 class Subscript;
 class Starred;
@@ -132,6 +134,8 @@ public:
     virtual void visit(Constant&) = 0;
     virtual void visit(Str&) = 0;
     virtual void visit(Num&) = 0;
+    virtual void visit(Bool&) = 0;
+    virtual void visit(None&) = 0;
     virtual void visit(Attribute&) = 0;
     virtual void visit(Subscript&) = 0;
     virtual void visit(Starred&) = 0;

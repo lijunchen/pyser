@@ -154,6 +154,21 @@ public:
     optional<string> kind;
 };
 
+class Bool: public expr {
+public:
+    Bool(string value): value(value) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+public:
+    string value;
+};
+
+class None: public expr {
+public:
+    None() {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+};
+
 class Name: public expr {
 public:
     Name(const string& id, const expr_context& ctx): id(id), ctx(ctx) {}
