@@ -256,4 +256,159 @@ public:
     exprP value;
 };
 
+class FunctionDef: public stmt {
+public:
+public:
+    string name;
+    unique_ptr<arguments> args;
+    stmtPs body;
+    exprPs decorator_list;
+    exprP returns;
+};
+
+class ClassDef: public stmt {
+public:
+public:
+};
+
+class Return: public stmt {
+public:
+public:
+    exprP value;
+};
+
+class Delete: public stmt {
+public:
+public:
+    exprPs targets;
+};
+
+class AugAssign: public stmt {
+public:
+public:
+    exprP target;
+    operator_ op;
+    exprP value;
+};
+
+class AnnAssign: public stmt {
+public:
+public:
+    exprP target;
+    exprP annotation;
+    exprP value;
+    int simple;
+};
+
+class For: public stmt {
+public:
+public:
+    exprP target;
+    exprP iter;
+    stmtPs body;
+    stmtPs orelse;
+};
+
+class With: public stmt {
+public:
+public:
+};
+
+class Raise: public stmt {
+public:
+public:
+};
+
+class Try: public stmt {
+public:
+public:
+    exprP exc;
+    exprP cause;
+};
+
+class Assert: public stmt {
+public:
+public:
+    exprP test;
+    exprP msg;
+};
+
+class Import: public stmt {
+public:
+public:
+};
+
+class ImportFrom: public stmt {
+public:
+public:
+};
+
+class Global: public stmt {
+public:
+public:
+};
+
+class Nonlocal: public stmt {
+public:
+public:
+};
+
+class Pass: public stmt {
+public:
+public:
+};
+
+class Break: public stmt {
+public:
+public:
+};
+
+class Continue: public stmt {
+public:
+public:
+};
+
+class Lambda: public expr {
+public:
+public:
+};
+
+class IfExp: public expr {
+public:
+public:
+};
+
+class Dict: public expr {
+public:
+public:
+};
+
+class Set: public expr {
+public:
+public:
+};
+
+class Yield: public expr {
+public:
+public:
+};
+
+class YieldFrom: public expr {
+public:
+public:
+};
+
+class Starred: public expr {
+public:
+public:
+};
+
+class arguments {
+
+};
+
+class arg {
+
+};
+
 #endif /* AST_H */
