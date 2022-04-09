@@ -442,3 +442,5 @@ void PrettyPrinter::visit(YieldFrom& node) {}
 void PrettyPrinter::visit(Starred& node) {}
 void PrettyPrinter::visit(arguments& node) {}
 void PrettyPrinter::visit(arg& node) {}
+void PrettyPrinter::visit(alias& node) {}
+void PrettyPrinter::visit(withitem& node) {}
