@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <optional>
+#include <unordered_set>
 
 
 #include "AST.h"
@@ -17,6 +18,7 @@ using std::unique_ptr;
 using std::make_unique;
 using std::nullopt;
 using std::optional;
+using std::unordered_set;
 
 class Token;
 
@@ -45,7 +47,7 @@ public:
 
 private:
 
-    bool expect(TokenType type) {
+    bool expect(Token::Type type) {
         Token t = peek();
         if (t.type == type) {
             next();
@@ -55,7 +57,7 @@ private:
         }
     }
 
-    Token expectT(TokenType type) {
+    Token expectT(Token::Type type) {
         Token t = peek();
         if (t.type == type) {
             next();
@@ -67,7 +69,7 @@ private:
 
     bool expect(const string& tok) {
         Token t = peek();
-        if (t.type == TokenType::NAME && t.raw == tok) {
+        if (t.type == Token::Type::NAME && t.raw == tok) {
             next();
             return true;
         } else {
@@ -99,6 +101,8 @@ private:
     Token peek() { return tokenizer.peek(); }
     Token next() { return tokenizer.next(); }
     Tokenizer tokenizer;
+private:
+    static unordered_set<string> keywords;
 };
 
 #endif /* PARSER_H */

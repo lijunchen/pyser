@@ -34,6 +34,30 @@ string PrettyPrinter::unaryopToString(unaryop op) {
     return "InvalidUnaryOperator";
 }
 
+string PrettyPrinter::boolopToString(boolop op) {
+    switch (op) {
+        case boolop::And: return "And()";
+        case boolop::Or: return "Or()";
+        default: break;
+    }
+}
+
+string PrettyPrinter::cmpopToString(cmpop op) {
+    switch (op) {
+        case cmpop::Eq: return "Eq()";
+        case cmpop::NotEq: return "NotEq()";
+        case cmpop::Lt: return "Lt()";
+        case cmpop::LtE: return "LtE()";
+        case cmpop::Gt: return "Gt()";
+        case cmpop::GtE: return "GtE()";
+        case cmpop::Is: return "Is()";
+        case cmpop::IsNot: return "IsNot()";
+        case cmpop::In: return "In()";
+        case cmpop::NotIn: return "NotIn()";
+        default: break;
+    }
+}
+
 void PrettyPrinter::visit(Module& node) {
     string s = "Module(\n";
     {
@@ -161,6 +185,27 @@ void PrettyPrinter::visit(BinOp& node) {
     ctx.s = s;
 }
 
+void PrettyPrinter::visit(BoolOp& node) {
+    string s = "BoolOp(\n";
+    {
+        ctx.level++;
+        s += indent() + "op=" + boolopToString(node.op) + ",\n";
+        s += indent() + "values=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.values.size(); i++) {
+                node.values[i]->accept(*this);
+                s += indent() + ctx.s + ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "]\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
 void PrettyPrinter::visit(UnaryOp& node) {
     string s = "UnaryOp(\n";
     {
@@ -168,6 +213,37 @@ void PrettyPrinter::visit(UnaryOp& node) {
         s += indent() + "op=" + unaryopToString(node.op) + ",\n";
         node.operand->accept(*this);
         s += indent() + "operand=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(Compare& node) {
+    string s = "Compare(\n";
+    {
+        ctx.level++;
+        node.left->accept(*this);
+        s += indent() + "left=" + ctx.s + ",\n";
+        s += indent() + "ops=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.ops.size(); i++) {
+                s += indent() + cmpopToString(node.ops[i]) + ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "],\n";
+        s += indent() + "comparators=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.comparators.size(); i++) {
+                node.comparators[i]->accept(*this);
+                s += indent() + ctx.s + ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "],\n";
         ctx.level--;
     }
     s += indent() + ")";

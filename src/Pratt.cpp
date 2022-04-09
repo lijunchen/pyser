@@ -48,94 +48,112 @@ string assocToString(Assoc at) {
     }
 }
 
-unordered_map<TokenType, optional<BindingPower>> infixTable;
-unordered_map<TokenType, optional<BindingPower>> prefixTable;
-unordered_map<TokenType, optional<BindingPower>> postfixTable;
+unordered_map<Token, optional<BindingPower>> infixTable;
+unordered_map<Token, optional<BindingPower>> prefixTable;
+unordered_map<Token, optional<BindingPower>> postfixTable;
 
-vector<tuple<Fix, Assoc, vector<TokenType>>> table = {
+vector<tuple<Fix, Assoc, vector<Token>>> table = {
     // Precedence from low to high
 
-    { Fix::In, Assoc::Left, { TokenType::EQEQUAL,
-                TokenType::NOTEQUAL,
-                TokenType::LESSEQUAL,
-                TokenType::LESS,
-                TokenType::GREATEREQUAL,
-                TokenType::GREATER } },
+    { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
+    { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
 
-    { Fix::In, Assoc::Left, { TokenType::VBAR } },       // |
-    { Fix::In, Assoc::Left, { TokenType::CIRCUMFLEX } }, // ^
-    { Fix::In, Assoc::Left, { TokenType::AMPER } },      // &
+    { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "not") }},
 
-    { Fix::In, Assoc::Left, { TokenType::LEFTSHIFT,
-               TokenType::RIGHTSHIFT } },
+    { Fix::In, Assoc::Left, {
+                Token(Token::Type::EQEQUAL, "=="),
+                Token(Token::Type::NOTEQUAL, "!="),
+                Token(Token::Type::LESSEQUAL, "<="),
+                Token(Token::Type::LESS, "<"),
+                Token(Token::Type::GREATEREQUAL, ">="),
+                Token(Token::Type::GREATER, ">"),
+                Token(Token::Type::NAME, "not in"),
+                Token(Token::Type::NAME, "in"),
+                Token(Token::Type::NAME, "is not"),
+                Token(Token::Type::NAME, "is"),
+                } },
 
-    { Fix::In, Assoc::Left, { TokenType::PLUS,
-                TokenType::MINUS } },
+    { Fix::In, Assoc::Left, { Token(Token::Type::VBAR, "|") } },       // |
+    { Fix::In, Assoc::Left, { Token(Token::Type::CIRCUMFLEX, "^") } }, // ^
+    { Fix::In, Assoc::Left, { Token(Token::Type::AMPER, "&") } },      // &
 
-    { Fix::In, Assoc::Left, { TokenType::STAR,
-                TokenType::SLASH,
-                TokenType::DOUBLESLASH,
-                TokenType::PERCENT,
-                TokenType::AT } },
+    { Fix::In, Assoc::Left, {
+                Token(Token::Type::LEFTSHIFT, "<<"),
+                Token(Token::Type::RIGHTSHIFT, ">>"),
+                } },
 
-    { Fix::Pre, Assoc::Non, { TokenType::PLUS } },
-    { Fix::Pre, Assoc::Non, { TokenType::MINUS } },
-    { Fix::Pre, Assoc::Non, { TokenType::TILDE } },
+    { Fix::In, Assoc::Left, {
+                Token(Token::Type::PLUS, "+"),
+                Token(Token::Type::MINUS, "-"),
+                } },
 
-    { Fix::In, Assoc::Right, { TokenType::DOUBLESTAR } },
+    { Fix::In, Assoc::Left, {
+                Token(Token::Type::STAR, "*"),
+                Token(Token::Type::SLASH, "/"),
+                Token(Token::Type::DOUBLESLASH, "//"),
+                Token(Token::Type::PERCENT, "%"),
+                Token(Token::Type::AT, "@"),
+                } },
 
-    { Fix::Post, Assoc::Non, { TokenType::DOT } },
-    { Fix::Post, Assoc::Non, { TokenType::LPAR } },
-    { Fix::Post, Assoc::Non, { TokenType::LSQB } },
+    { Fix::Pre, Assoc::Non, { Token(Token::Type::PLUS, "+") } },
+    { Fix::Pre, Assoc::Non, { Token(Token::Type::MINUS, "-") } },
+    { Fix::Pre, Assoc::Non, { Token(Token::Type::TILDE, "~") } },
+
+    { Fix::In, Assoc::Right, { Token(Token::Type::DOUBLESTAR, "**") } },
+
+    { Fix::Post, Assoc::Non, { Token(Token::Type::DOT, ".") } },
+    { Fix::Post, Assoc::Non, { Token(Token::Type::LPAR, "(") } },
+    { Fix::Post, Assoc::Non, { Token(Token::Type::LSQB, ")") } },
 };
 
 void initBindingPowerTables() {
     printf("initBindingPowerTables\n");
     for (int i = 0; i < table.size(); i++) {
+        int l = i + 1;
         Fix bt = std::get<0>(table[i]);
         Assoc at = std::get<1>(table[i]);
-        vector<TokenType> tts = std::get<2>(table[i]);
+        vector<Token> ts = std::get<2>(table[i]);
         if (bt == Fix::In) {
-            for (TokenType tt : tts) {
+            for (const Token& t : ts) {
                 if (at == Assoc::Left) {
-                    infixTable[tt] = BindingPower(i, i + 1);
-                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i, i + 1);
+                    infixTable[t] = BindingPower(l * 2 - 1, l * 2);
+                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(), assocToString(at).c_str(), l * 2 - 1, l * 2);
                 } else {
-                    infixTable[tt] = BindingPower(i + 1, i);
-                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i + 1, i);
+                    infixTable[t] = BindingPower(l * 2, l * 2 - 1);
+                    printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(), assocToString(at).c_str(), l * 2, l * 2 - 1);
                 }
             }
         } else if (bt == Fix::Pre) {
-            for (TokenType tt : tts) {
-                prefixTable[tt] = BindingPower(nullopt, i);
-                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i, i + 1);
+            for (const Token& t : ts) {
+                prefixTable[t] = BindingPower(nullopt, l * 2);
+                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(), assocToString(at).c_str(), -1, l * 2);
             }
         } else if (bt == Fix::Post) {
-            for (TokenType tt : tts) {
-                postfixTable[tt] = BindingPower(i, nullopt);
-                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), tokenTypeToString(tt).c_str(), assocToString(at).c_str(), i, i + 1);
+            for (const Token& t : ts) {
+                postfixTable[t] = BindingPower(l * 2, nullopt);
+                printf("%s %s %s %d %d\n", fixToString(bt).c_str(), t.toString().c_str(),  assocToString(at).c_str(), l * 2, -1);
             }
         }
     }
 }
 
 optional<BindingPower> prefix_binding_power(const Token& t) {
-    if (prefixTable.count(t.type)) {
-        return prefixTable[t.type];
+    if (prefixTable.count(t)) {
+        return prefixTable[t];
     }
     return nullopt;
 }
 
 optional<BindingPower> post_binding_power(const Token& t) {
-    if (postfixTable.count(t.type)) {
-        return postfixTable[t.type];
+    if (postfixTable.count(t)) {
+        return postfixTable[t];
     }
     return nullopt;
 }
 
 optional<BindingPower> infix_binding_power(const Token& t) {
-    if (infixTable.count(t.type)) {
-        return infixTable[t.type];
+    if (infixTable.count(t)) {
+        return infixTable[t];
     }
     return nullopt;
 }
@@ -149,16 +167,19 @@ exprP Parser::pratt_parser_bp(int minBP) {
     if (optional<BindingPower> bp = prefix_binding_power(tok)) {
         next();
         exprP rhs = pratt_parser_bp(*bp->right);
-        if (tok.type == TokenType::PLUS) {
+        if (tok.type == Token::Type::PLUS) {
             lhs = make_unique<UnaryOp>(unaryop::UAdd, move(rhs));
-        } else if (tok.type == TokenType::MINUS) {
+        } else if (tok.type == Token::Type::MINUS) {
             lhs = make_unique<UnaryOp>(unaryop::USub, move(rhs));
-        } else if (tok.type == TokenType::TILDE) {
+        } else if (tok.type == Token::Type::TILDE) {
             lhs = make_unique<UnaryOp>(unaryop::Invert, move(rhs));
+        } else if (tok.type == Token::Type::NAME && tok.raw == "not") {
+            lhs = make_unique<UnaryOp>(unaryop::Not, move(rhs));
         }
     } else {
         lhs = atom();
     }
+
     if (!lhs) {
         reset(p);
         return nullptr;
@@ -167,30 +188,85 @@ exprP Parser::pratt_parser_bp(int minBP) {
     while (true) {
         const Token& t = peek();
         optional<BindingPower> bp = infix_binding_power(t);
-        if (!bp || !bp->right) {
+        if (!bp) {
+            printf("bp of %s is nullopt\n", t.toString().c_str());
             break;
         }
-        if (bp->left.value() < minBP) {
+        printf("while next token: %s, bp: %d, %d\n", t.toString().c_str(), bp->left.value(), bp->right.value());
+        if (*bp->left < minBP) {
             break;
         }
         next();
         exprP rhs = pratt_parser_bp(*bp->right);
-        operator_ op{};
-        bool ok = true;
-        switch (t.type) {
-        case TokenType::PLUS: op = operator_::Add; break;
-        case TokenType::MINUS: op = operator_::Sub; break;
-        case TokenType::STAR: op = operator_::Mult; break;
-        case TokenType::SLASH: op = operator_::Div; break;
-        case TokenType::DOUBLESTAR: op = operator_::Pow; break;
-        default:
-            ok = false;
+        if (t.is_operator()) {
+            operator_ op{};
+            switch (t.type) {
+                case Token::Type::PLUS: op = operator_::Add; break;
+                case Token::Type::MINUS: op = operator_::Sub; break;
+                case Token::Type::STAR: op = operator_::Mult; break;
+                case Token::Type::SLASH: op = operator_::Div; break;
+                case Token::Type::DOUBLESTAR: op = operator_::Pow; break;
+                default:
+                    break;
+            }
+            lhs = make_unique<BinOp>(std::move(lhs), op, std::move(rhs));
+        } else if (t.is_boolop()) {
+            boolop op{};
+            if (t.raw == "and") {
+                op = boolop::And;
+            } else if (t.raw == "or") {
+                op = boolop::Or;
+            } else {
+                ; // impossible
+            }
+
+            BoolOp* p = dynamic_cast<BoolOp*>(lhs.get());
+            if (p && p->op == op) {
+                p->values.push_back(move(rhs));
+            } else {
+                vector<exprP> values;
+                values.push_back(move(lhs));
+                values.push_back(move(rhs));
+                lhs = make_unique<BoolOp>(op, move(values));
+            }
+        } else if (t.is_cmpop()) {
+            // { Eq, NotEq, Lt, LtE, Gt, GtE, Is, IsNot, In, NotIn};
+            cmpop op{};
+            switch (t.type) {
+                case Token::Type::EQUAL: op = cmpop::Eq; break;
+                case Token::Type::NOTEQUAL: op = cmpop::NotEq; break;
+                case Token::Type::LESS: op = cmpop::Lt; break;
+                case Token::Type::LESSEQUAL: op = cmpop::LtE; break;
+                case Token::Type::GREATER: op = cmpop::Gt; break;
+                case Token::Type::GREATEREQUAL: op = cmpop::GtE; break;
+                case Token::Type::NAME: {
+                    if (t.raw == "in") {
+                        op = cmpop::In;
+                        break;
+                    }
+                    if (t.raw == "is") {
+                        op = cmpop::Is;
+                        break;
+                    }
+                }
+                default:
+                    break;
+            }
+            Compare* p = dynamic_cast<Compare*>(lhs.get());
+            if (p) {
+                p->ops.push_back(op);
+                p->comparators.push_back(move(rhs));
+            } else {
+                vector<cmpop> ops;
+                ops.push_back(op);
+                vector<exprP> comparators;
+                comparators.push_back(move(rhs));
+                lhs = make_unique<Compare>(move(lhs), ops, move(comparators));
+            }
+        } else {
             break;
         }
-        if (!ok) {
-            break;
-        }
-        lhs = make_unique<BinOp>(std::move(lhs), op, std::move(rhs));
+
     }
 
     if (lhs) {

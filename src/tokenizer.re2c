@@ -36,16 +36,16 @@ void processIndent(vector<Token>& toks, stack<int>& ind, int& nesting, char* lin
   }
 
   if (indent > ind.top()) {
-    toks.push_back(Token(TokenType::NEWLINE));
-    toks.push_back(Token(TokenType::INDENT, string(indent, ' ')));
+    toks.push_back(Token(Token::Type::NEWLINE));
+    toks.push_back(Token(Token::Type::INDENT, string(indent, ' ')));
     ind.push(indent);
     return;
   }
 
   while (indent < ind.top()) {
     ind.pop();
-    toks.push_back(Token(TokenType::NEWLINE));
-    toks.push_back(Token(TokenType::DEDENT));
+    toks.push_back(Token(Token::Type::NEWLINE));
+    toks.push_back(Token(Token::Type::DEDENT));
   }
 }
 
@@ -74,67 +74,67 @@ again:
         STRING3 = '"""' [.\n]* '"""';
         
         @t1 NUMBER @t2 {
-            tokens.push_back(Token(TokenType::NUMBER, string(t1, t2 - t1)));
+            tokens.push_back(Token(Token::Type::NUMBER, string(t1, t2 - t1)));
             goto again;
         }
 
         @t1 NAME @t2 {
-            tokens.push_back(Token(TokenType::NAME, string(t1, t2 - t1)));
+            tokens.push_back(Token(Token::Type::NAME, string(t1, t2 - t1)));
             goto again;
         }
 
-        "'" { tokens.push_back(Token(TokenType::ERRORTOKEN)); goto again; }
-        '"' { tokens.push_back(Token(TokenType::ERRORTOKEN)); goto again; }
-        "%" { tokens.push_back(Token(TokenType::PERCENT, "%")); goto again; }
-        "&" { tokens.push_back(Token(TokenType::AMPER, "&")); goto again; }
-        "(" { tokens.push_back(Token(TokenType::LPAR, "(")); nesting++; goto again; }
-        ")" { tokens.push_back(Token(TokenType::RPAR, ")")); nesting--; goto again; }
-        "*" { tokens.push_back(Token(TokenType::STAR, "*")); goto again; }
-        "+" { tokens.push_back(Token(TokenType::PLUS, "+")); goto again; }
-        "," { tokens.push_back(Token(TokenType::COMMA, ",")); goto again; }
-        "-" { tokens.push_back(Token(TokenType::MINUS, "-")); goto again; }
-        "." { tokens.push_back(Token(TokenType::DOT, ".")); goto again; }
-        "/" { tokens.push_back(Token(TokenType::SLASH, "/")); goto again; }
-        ":" { tokens.push_back(Token(TokenType::COLON, ":")); goto again; }
-        ";" { tokens.push_back(Token(TokenType::SEMI, ";")); goto again; }
-        "<" { tokens.push_back(Token(TokenType::LESS, "<")); goto again; }
-        "=" { tokens.push_back(Token(TokenType::EQUAL, "=")); goto again; }
-        ">" { tokens.push_back(Token(TokenType::GREATER, ">")); goto again; }
-        "@" { tokens.push_back(Token(TokenType::AT, "@")); goto again; }
-        "[" { tokens.push_back(Token(TokenType::LSQB, "[")); nesting++; goto again; }
-        "]" { tokens.push_back(Token(TokenType::RSQB, "]")); nesting--; goto again; }
-        "^" { tokens.push_back(Token(TokenType::CIRCUMFLEX, "^")); goto again; }
-        "{" { tokens.push_back(Token(TokenType::LBRACE, "{")); nesting++; goto again; }
-        "|" { tokens.push_back(Token(TokenType::VBAR, "|")); goto again; }
-        "}" { tokens.push_back(Token(TokenType::RBRACE, "}")); nesting--; goto again; }
-        "~" { tokens.push_back(Token(TokenType::TILDE, "~")); goto again; }
+        "'" { tokens.push_back(Token(Token::Type::ERRORTOKEN)); goto again; }
+        '"' { tokens.push_back(Token(Token::Type::ERRORTOKEN)); goto again; }
+        "%" { tokens.push_back(Token(Token::Type::PERCENT, "%")); goto again; }
+        "&" { tokens.push_back(Token(Token::Type::AMPER, "&")); goto again; }
+        "(" { tokens.push_back(Token(Token::Type::LPAR, "(")); nesting++; goto again; }
+        ")" { tokens.push_back(Token(Token::Type::RPAR, ")")); nesting--; goto again; }
+        "*" { tokens.push_back(Token(Token::Type::STAR, "*")); goto again; }
+        "+" { tokens.push_back(Token(Token::Type::PLUS, "+")); goto again; }
+        "," { tokens.push_back(Token(Token::Type::COMMA, ",")); goto again; }
+        "-" { tokens.push_back(Token(Token::Type::MINUS, "-")); goto again; }
+        "." { tokens.push_back(Token(Token::Type::DOT, ".")); goto again; }
+        "/" { tokens.push_back(Token(Token::Type::SLASH, "/")); goto again; }
+        ":" { tokens.push_back(Token(Token::Type::COLON, ":")); goto again; }
+        ";" { tokens.push_back(Token(Token::Type::SEMI, ";")); goto again; }
+        "<" { tokens.push_back(Token(Token::Type::LESS, "<")); goto again; }
+        "=" { tokens.push_back(Token(Token::Type::EQUAL, "=")); goto again; }
+        ">" { tokens.push_back(Token(Token::Type::GREATER, ">")); goto again; }
+        "@" { tokens.push_back(Token(Token::Type::AT, "@")); goto again; }
+        "[" { tokens.push_back(Token(Token::Type::LSQB, "[")); nesting++; goto again; }
+        "]" { tokens.push_back(Token(Token::Type::RSQB, "]")); nesting--; goto again; }
+        "^" { tokens.push_back(Token(Token::Type::CIRCUMFLEX, "^")); goto again; }
+        "{" { tokens.push_back(Token(Token::Type::LBRACE, "{")); nesting++; goto again; }
+        "|" { tokens.push_back(Token(Token::Type::VBAR, "|")); goto again; }
+        "}" { tokens.push_back(Token(Token::Type::RBRACE, "}")); nesting--; goto again; }
+        "~" { tokens.push_back(Token(Token::Type::TILDE, "~")); goto again; }
 
-        "!=" { tokens.push_back(Token(TokenType::NOTEQUAL, "!=")); goto again; }
-        "%=" { tokens.push_back(Token(TokenType::PERCENTEQUAL, "%=")); goto again; }
-        "&=" { tokens.push_back(Token(TokenType::AMPEREQUAL, "&=")); goto again; }
-        "**" { tokens.push_back(Token(TokenType::DOUBLESTAR, "**")); goto again; }
-        "*=" { tokens.push_back(Token(TokenType::STAREQUAL, "*=")); goto again; }
-        "+=" { tokens.push_back(Token(TokenType::PLUSEQUAL, "+=")); goto again; }
-        "-=" { tokens.push_back(Token(TokenType::MINEQUAL, "-=")); goto again; }
-        "->" { tokens.push_back(Token(TokenType::RARROW, "->")); goto again; }
-        "//" { tokens.push_back(Token(TokenType::DOUBLESLASH, "//")); goto again; }
-        "/=" { tokens.push_back(Token(TokenType::SLASHEQUAL, "/=")); goto again; }
-        ":=" { tokens.push_back(Token(TokenType::COLONEQUAL, ":=")); goto again; }
-        "<<" { tokens.push_back(Token(TokenType::LEFTSHIFT, "<<")); goto again; }
-        "<=" { tokens.push_back(Token(TokenType::LESSEQUAL, "<=")); goto again; }
-        "<>" { tokens.push_back(Token(TokenType::NOTEQUAL, "<>")); goto again; }
-        "==" { tokens.push_back(Token(TokenType::EQEQUAL, "==")); goto again; }
-        ">=" { tokens.push_back(Token(TokenType::GREATEREQUAL, ">=")); goto again; }
-        ">>" { tokens.push_back(Token(TokenType::RIGHTSHIFT, ">>")); goto again; }
-        "@=" { tokens.push_back(Token(TokenType::ATEQUAL, "@=")); goto again; }
-        "^=" { tokens.push_back(Token(TokenType::CIRCUMFLEXEQUAL, "^=")); goto again; }
-        "|=" { tokens.push_back(Token(TokenType::VBAREQUAL, "|=")); goto again; }
+        "!=" { tokens.push_back(Token(Token::Type::NOTEQUAL, "!=")); goto again; }
+        "%=" { tokens.push_back(Token(Token::Type::PERCENTEQUAL, "%=")); goto again; }
+        "&=" { tokens.push_back(Token(Token::Type::AMPEREQUAL, "&=")); goto again; }
+        "**" { tokens.push_back(Token(Token::Type::DOUBLESTAR, "**")); goto again; }
+        "*=" { tokens.push_back(Token(Token::Type::STAREQUAL, "*=")); goto again; }
+        "+=" { tokens.push_back(Token(Token::Type::PLUSEQUAL, "+=")); goto again; }
+        "-=" { tokens.push_back(Token(Token::Type::MINEQUAL, "-=")); goto again; }
+        "->" { tokens.push_back(Token(Token::Type::RARROW, "->")); goto again; }
+        "//" { tokens.push_back(Token(Token::Type::DOUBLESLASH, "//")); goto again; }
+        "/=" { tokens.push_back(Token(Token::Type::SLASHEQUAL, "/=")); goto again; }
+        ":=" { tokens.push_back(Token(Token::Type::COLONEQUAL, ":=")); goto again; }
+        "<<" { tokens.push_back(Token(Token::Type::LEFTSHIFT, "<<")); goto again; }
+        "<=" { tokens.push_back(Token(Token::Type::LESSEQUAL, "<=")); goto again; }
+        "<>" { tokens.push_back(Token(Token::Type::NOTEQUAL, "<>")); goto again; }
+        "==" { tokens.push_back(Token(Token::Type::EQEQUAL, "==")); goto again; }
+        ">=" { tokens.push_back(Token(Token::Type::GREATEREQUAL, ">=")); goto again; }
+        ">>" { tokens.push_back(Token(Token::Type::RIGHTSHIFT, ">>")); goto again; }
+        "@=" { tokens.push_back(Token(Token::Type::ATEQUAL, "@=")); goto again; }
+        "^=" { tokens.push_back(Token(Token::Type::CIRCUMFLEXEQUAL, "^=")); goto again; }
+        "|=" { tokens.push_back(Token(Token::Type::VBAREQUAL, "|=")); goto again; }
 
-        "**=" { tokens.push_back(Token(TokenType::DOUBLESTAREQUAL, "**=")); goto again; }
-        "..." { tokens.push_back(Token(TokenType::ELLIPSIS, "...")); goto again; }
-        "//=" { tokens.push_back(Token(TokenType::DOUBLESLASHEQUAL, "//=")); goto again; }
-        "<<=" { tokens.push_back(Token(TokenType::LEFTSHIFTEQUAL, "<<=")); goto again; }
-        ">>=" { tokens.push_back(Token(TokenType::RIGHTSHIFTEQUAL, ">>=")); goto again; }
+        "**=" { tokens.push_back(Token(Token::Type::DOUBLESTAREQUAL, "**=")); goto again; }
+        "..." { tokens.push_back(Token(Token::Type::ELLIPSIS, "...")); goto again; }
+        "//=" { tokens.push_back(Token(Token::Type::DOUBLESLASHEQUAL, "//=")); goto again; }
+        "<<=" { tokens.push_back(Token(Token::Type::LEFTSHIFTEQUAL, "<<=")); goto again; }
+        ">>=" { tokens.push_back(Token(Token::Type::RIGHTSHIFTEQUAL, ">>=")); goto again; }
 
         // ignore blank lines
         @t1 [\n] @t2 SPACE* @t3 [\n] {
@@ -151,25 +151,25 @@ again:
         COMMENT { goto again; }
 
         @t1 STRING3 {
-            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            tokens.push_back(Token(Token::Type::STRING, string(t1, YYCURSOR - t1)));
             goto again;
         }
         @t1 STRING2 {
-            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            tokens.push_back(Token(Token::Type::STRING, string(t1, YYCURSOR - t1)));
             goto again;
         }
         @t1 STRING1 {
-            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            tokens.push_back(Token(Token::Type::STRING, string(t1, YYCURSOR - t1)));
             goto again;
         }
         [ ] { goto again; }
         [\t] { goto again; }
 
-        [\n] { tokens.push_back(Token(TokenType::NEWLINE)); goto again; }
+        [\n] { tokens.push_back(Token(Token::Type::NEWLINE)); goto again; }
 
         [\x00] {
             processIndent(tokens, ind, nesting, (char*)YYCURSOR, (char*)YYCURSOR);
-            tokens.push_back(Token(TokenType::ENDMARKER));
+            tokens.push_back(Token(Token::Type::ENDMARKER));
         }
 
         * { goto done; }

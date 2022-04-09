@@ -16,8 +16,13 @@ public:
     PPContext ctx;
 public:
     string indent() { return string(ctx.level * 4, ' '); }
+public:
     string operatorToString(operator_ op);
     string unaryopToString(unaryop op);
+    string boolopToString(boolop op);
+    string cmpopToString(cmpop op);
+
+public:
     virtual void visit(Module&) override;
     virtual void visit(Interactive&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Expression&) override { throw runtime_error("not imp yet"); };
@@ -48,7 +53,7 @@ public:
     virtual void visit(Pass&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Break&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Continue&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(BoolOp&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(BoolOp&) override;
     virtual void visit(NamedExpr&) override { throw runtime_error("not imp yet"); };
     virtual void visit(BinOp&) override;
     virtual void visit(UnaryOp&) override;
@@ -63,7 +68,7 @@ public:
     virtual void visit(Await&) override { throw runtime_error("not imp yet"); };
     virtual void visit(Yield&) override { throw runtime_error("not imp yet"); };
     virtual void visit(YieldFrom&) override { throw runtime_error("not imp yet"); };
-    virtual void visit(Compare&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(Compare&) override;
     virtual void visit(Call&) override { throw runtime_error("not imp yet"); };
     virtual void visit(FormattedValue&) override { throw runtime_error("not imp yet"); };
     virtual void visit(JoinedStr&) override { throw runtime_error("not imp yet"); };
