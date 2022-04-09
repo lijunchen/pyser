@@ -93,13 +93,35 @@ private:
     stmtP statement();
 
     stmtP compound_stmt();
-    optional<stmtPs> block();
+    stmtP function_def();
     stmtP if_stmt();
+    stmtP class_def();
+    stmtP with_stmt();
+    stmtP for_stmt();
+    stmtP try_stmt();
     stmtP while_stmt();
+    stmtP match_stmt();
+
+
+    optional<stmtPs> block();
 
     optional<stmtPs> simple_stmts();
     stmtP simple_stmt();
-    exprPs star_expressions();
+    stmtP assignment()  ;
+    stmtP star_expressions();
+    stmtP return_stmt();
+    stmtP import_stmt();
+    stmtP raise_stmt();
+    stmtP pass_stmt();
+    stmtP del_stmt();
+    stmtP yield_stmt();
+    stmtP assert_stmt();
+    stmtP break_stmt();
+    stmtP continue_stmt();
+    stmtP global_stmt();
+    stmtP nonlocal_stmt();
+
+
     exprP star_expression();
     exprP expression();
     exprP atom();
