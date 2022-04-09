@@ -16,7 +16,7 @@ public:
         if (p < tokens.size()) {
             return tokens[p];
         } else {
-            return Token(TokenType::ENDMARKER);
+            return Token(Token::Type::ENDMARKER);
         }
     }
     Token next() {

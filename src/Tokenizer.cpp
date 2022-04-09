@@ -38,16 +38,16 @@ void processIndent(vector<Token>& toks, stack<int>& ind, int& nesting, char* lin
   }
 
   if (indent > ind.top()) {
-    toks.push_back(Token(TokenType::NEWLINE));
-    toks.push_back(Token(TokenType::INDENT, string(indent, ' ')));
+    toks.push_back(Token(Token::Type::NEWLINE));
+    toks.push_back(Token(Token::Type::INDENT, string(indent, ' ')));
     ind.push(indent);
     return;
   }
 
   while (indent < ind.top()) {
     ind.pop();
-    toks.push_back(Token(TokenType::NEWLINE));
-    toks.push_back(Token(TokenType::DEDENT));
+    toks.push_back(Token(Token::Type::NEWLINE));
+    toks.push_back(Token(Token::Type::DEDENT));
   }
 }
 
@@ -183,7 +183,7 @@ yy1:
 #line 170 "./tokenizer.re2c"
 	{
             processIndent(tokens, ind, nesting, (char*)YYCURSOR, (char*)YYCURSOR);
-            tokens.push_back(Token(TokenType::ENDMARKER));
+            tokens.push_back(Token(Token::Type::ENDMARKER));
         }
 #line 189 "Tokenizer.cpp"
 yy2:
@@ -211,7 +211,7 @@ yy5:
 	}
 yy6:
 #line 168 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::NEWLINE)); goto again; }
+	{ tokens.push_back(Token(Token::Type::NEWLINE)); goto again; }
 #line 216 "Tokenizer.cpp"
 yy7:
 	++YYCURSOR;
@@ -234,7 +234,7 @@ yy9:
 	}
 yy10:
 #line 87 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::ERRORTOKEN)); goto again; }
+	{ tokens.push_back(Token(Token::Type::ERRORTOKEN)); goto again; }
 #line 239 "Tokenizer.cpp"
 yy11:
 	yych = *++YYCURSOR;
@@ -254,7 +254,7 @@ yy13:
 	}
 yy14:
 #line 88 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::PERCENT, "%")); goto again; }
+	{ tokens.push_back(Token(Token::Type::PERCENT, "%")); goto again; }
 #line 259 "Tokenizer.cpp"
 yy15:
 	yych = *++YYCURSOR;
@@ -264,7 +264,7 @@ yy15:
 	}
 yy16:
 #line 89 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::AMPER, "&")); goto again; }
+	{ tokens.push_back(Token(Token::Type::AMPER, "&")); goto again; }
 #line 269 "Tokenizer.cpp"
 yy17:
 	yyaccept = 1;
@@ -275,17 +275,17 @@ yy17:
 	}
 yy18:
 #line 86 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::ERRORTOKEN)); goto again; }
+	{ tokens.push_back(Token(Token::Type::ERRORTOKEN)); goto again; }
 #line 280 "Tokenizer.cpp"
 yy19:
 	++YYCURSOR;
 #line 90 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LPAR, "(")); nesting++; goto again; }
+	{ tokens.push_back(Token(Token::Type::LPAR, "(")); nesting++; goto again; }
 #line 285 "Tokenizer.cpp"
 yy20:
 	++YYCURSOR;
 #line 91 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::RPAR, ")")); nesting--; goto again; }
+	{ tokens.push_back(Token(Token::Type::RPAR, ")")); nesting--; goto again; }
 #line 290 "Tokenizer.cpp"
 yy21:
 	yych = *++YYCURSOR;
@@ -296,7 +296,7 @@ yy21:
 	}
 yy22:
 #line 92 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::STAR, "*")); goto again; }
+	{ tokens.push_back(Token(Token::Type::STAR, "*")); goto again; }
 #line 301 "Tokenizer.cpp"
 yy23:
 	yych = *++YYCURSOR;
@@ -306,12 +306,12 @@ yy23:
 	}
 yy24:
 #line 93 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::PLUS, "+")); goto again; }
+	{ tokens.push_back(Token(Token::Type::PLUS, "+")); goto again; }
 #line 311 "Tokenizer.cpp"
 yy25:
 	++YYCURSOR;
 #line 94 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::COMMA, ",")); goto again; }
+	{ tokens.push_back(Token(Token::Type::COMMA, ",")); goto again; }
 #line 316 "Tokenizer.cpp"
 yy26:
 	yych = *++YYCURSOR;
@@ -322,7 +322,7 @@ yy26:
 	}
 yy27:
 #line 95 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::MINUS, "-")); goto again; }
+	{ tokens.push_back(Token(Token::Type::MINUS, "-")); goto again; }
 #line 327 "Tokenizer.cpp"
 yy28:
 	yyaccept = 2;
@@ -333,7 +333,7 @@ yy28:
 	}
 yy29:
 #line 96 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::DOT, ".")); goto again; }
+	{ tokens.push_back(Token(Token::Type::DOT, ".")); goto again; }
 #line 338 "Tokenizer.cpp"
 yy30:
 	yych = *++YYCURSOR;
@@ -344,7 +344,7 @@ yy30:
 	}
 yy31:
 #line 97 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::SLASH, "/")); goto again; }
+	{ tokens.push_back(Token(Token::Type::SLASH, "/")); goto again; }
 #line 349 "Tokenizer.cpp"
 yy32:
 	yych = *++YYCURSOR;
@@ -366,7 +366,7 @@ yy33:
 	t2 = YYCURSOR;
 #line 76 "./tokenizer.re2c"
 	{
-            tokens.push_back(Token(TokenType::NUMBER, string(t1, t2 - t1)));
+            tokens.push_back(Token(Token::Type::NUMBER, string(t1, t2 - t1)));
             goto again;
         }
 #line 373 "Tokenizer.cpp"
@@ -378,12 +378,12 @@ yy34:
 	}
 yy35:
 #line 98 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::COLON, ":")); goto again; }
+	{ tokens.push_back(Token(Token::Type::COLON, ":")); goto again; }
 #line 383 "Tokenizer.cpp"
 yy36:
 	++YYCURSOR;
 #line 99 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::SEMI, ";")); goto again; }
+	{ tokens.push_back(Token(Token::Type::SEMI, ";")); goto again; }
 #line 388 "Tokenizer.cpp"
 yy37:
 	yych = *++YYCURSOR;
@@ -395,7 +395,7 @@ yy37:
 	}
 yy38:
 #line 100 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LESS, "<")); goto again; }
+	{ tokens.push_back(Token(Token::Type::LESS, "<")); goto again; }
 #line 400 "Tokenizer.cpp"
 yy39:
 	yych = *++YYCURSOR;
@@ -405,7 +405,7 @@ yy39:
 	}
 yy40:
 #line 101 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::EQUAL, "=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::EQUAL, "=")); goto again; }
 #line 410 "Tokenizer.cpp"
 yy41:
 	yych = *++YYCURSOR;
@@ -416,7 +416,7 @@ yy41:
 	}
 yy42:
 #line 102 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::GREATER, ">")); goto again; }
+	{ tokens.push_back(Token(Token::Type::GREATER, ">")); goto again; }
 #line 421 "Tokenizer.cpp"
 yy43:
 	yych = *++YYCURSOR;
@@ -426,7 +426,7 @@ yy43:
 	}
 yy44:
 #line 103 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::AT, "@")); goto again; }
+	{ tokens.push_back(Token(Token::Type::AT, "@")); goto again; }
 #line 431 "Tokenizer.cpp"
 yy45:
 	yych = *++YYCURSOR;
@@ -501,19 +501,19 @@ yy46:
 	t2 = YYCURSOR;
 #line 81 "./tokenizer.re2c"
 	{
-            tokens.push_back(Token(TokenType::NAME, string(t1, t2 - t1)));
+            tokens.push_back(Token(Token::Type::NAME, string(t1, t2 - t1)));
             goto again;
         }
 #line 508 "Tokenizer.cpp"
 yy47:
 	++YYCURSOR;
 #line 104 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LSQB, "[")); nesting++; goto again; }
+	{ tokens.push_back(Token(Token::Type::LSQB, "[")); nesting++; goto again; }
 #line 513 "Tokenizer.cpp"
 yy48:
 	++YYCURSOR;
 #line 105 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::RSQB, "]")); nesting--; goto again; }
+	{ tokens.push_back(Token(Token::Type::RSQB, "]")); nesting--; goto again; }
 #line 518 "Tokenizer.cpp"
 yy49:
 	yych = *++YYCURSOR;
@@ -523,12 +523,12 @@ yy49:
 	}
 yy50:
 #line 106 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::CIRCUMFLEX, "^")); goto again; }
+	{ tokens.push_back(Token(Token::Type::CIRCUMFLEX, "^")); goto again; }
 #line 528 "Tokenizer.cpp"
 yy51:
 	++YYCURSOR;
 #line 107 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LBRACE, "{")); nesting++; goto again; }
+	{ tokens.push_back(Token(Token::Type::LBRACE, "{")); nesting++; goto again; }
 #line 533 "Tokenizer.cpp"
 yy52:
 	yych = *++YYCURSOR;
@@ -538,17 +538,17 @@ yy52:
 	}
 yy53:
 #line 108 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::VBAR, "|")); goto again; }
+	{ tokens.push_back(Token(Token::Type::VBAR, "|")); goto again; }
 #line 543 "Tokenizer.cpp"
 yy54:
 	++YYCURSOR;
 #line 109 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::RBRACE, "}")); nesting--; goto again; }
+	{ tokens.push_back(Token(Token::Type::RBRACE, "}")); nesting--; goto again; }
 #line 548 "Tokenizer.cpp"
 yy55:
 	++YYCURSOR;
 #line 110 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::TILDE, "~")); goto again; }
+	{ tokens.push_back(Token(Token::Type::TILDE, "~")); goto again; }
 #line 553 "Tokenizer.cpp"
 yy56:
 	yych = *++YYCURSOR;
@@ -574,7 +574,7 @@ yy57:
 yy58:
 	++YYCURSOR;
 #line 112 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::NOTEQUAL, "!=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::NOTEQUAL, "!=")); goto again; }
 #line 579 "Tokenizer.cpp"
 yy59:
 	yych = *++YYCURSOR;
@@ -606,19 +606,19 @@ yy63:
 	t1 = yyt1;
 #line 157 "./tokenizer.re2c"
 	{
-            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            tokens.push_back(Token(Token::Type::STRING, string(t1, YYCURSOR - t1)));
             goto again;
         }
 #line 613 "Tokenizer.cpp"
 yy64:
 	++YYCURSOR;
 #line 113 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::PERCENTEQUAL, "%=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::PERCENTEQUAL, "%=")); goto again; }
 #line 618 "Tokenizer.cpp"
 yy65:
 	++YYCURSOR;
 #line 114 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::AMPEREQUAL, "&=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::AMPEREQUAL, "&=")); goto again; }
 #line 623 "Tokenizer.cpp"
 yy66:
 	yych = *++YYCURSOR;
@@ -640,7 +640,7 @@ yy69:
 	t1 = yyt1;
 #line 161 "./tokenizer.re2c"
 	{
-            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            tokens.push_back(Token(Token::Type::STRING, string(t1, YYCURSOR - t1)));
             goto again;
         }
 #line 647 "Tokenizer.cpp"
@@ -652,27 +652,27 @@ yy70:
 	}
 yy71:
 #line 115 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::DOUBLESTAR, "**")); goto again; }
+	{ tokens.push_back(Token(Token::Type::DOUBLESTAR, "**")); goto again; }
 #line 657 "Tokenizer.cpp"
 yy72:
 	++YYCURSOR;
 #line 116 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::STAREQUAL, "*=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::STAREQUAL, "*=")); goto again; }
 #line 662 "Tokenizer.cpp"
 yy73:
 	++YYCURSOR;
 #line 117 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::PLUSEQUAL, "+=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::PLUSEQUAL, "+=")); goto again; }
 #line 667 "Tokenizer.cpp"
 yy74:
 	++YYCURSOR;
 #line 118 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::MINEQUAL, "-=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::MINEQUAL, "-=")); goto again; }
 #line 672 "Tokenizer.cpp"
 yy75:
 	++YYCURSOR;
 #line 119 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::RARROW, "->")); goto again; }
+	{ tokens.push_back(Token(Token::Type::RARROW, "->")); goto again; }
 #line 677 "Tokenizer.cpp"
 yy76:
 	yych = *++YYCURSOR;
@@ -688,17 +688,17 @@ yy77:
 	}
 yy78:
 #line 120 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::DOUBLESLASH, "//")); goto again; }
+	{ tokens.push_back(Token(Token::Type::DOUBLESLASH, "//")); goto again; }
 #line 693 "Tokenizer.cpp"
 yy79:
 	++YYCURSOR;
 #line 121 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::SLASHEQUAL, "/=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::SLASHEQUAL, "/=")); goto again; }
 #line 698 "Tokenizer.cpp"
 yy80:
 	++YYCURSOR;
 #line 122 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::COLONEQUAL, ":=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::COLONEQUAL, ":=")); goto again; }
 #line 703 "Tokenizer.cpp"
 yy81:
 	yych = *++YYCURSOR;
@@ -708,27 +708,27 @@ yy81:
 	}
 yy82:
 #line 123 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LEFTSHIFT, "<<")); goto again; }
+	{ tokens.push_back(Token(Token::Type::LEFTSHIFT, "<<")); goto again; }
 #line 713 "Tokenizer.cpp"
 yy83:
 	++YYCURSOR;
 #line 124 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LESSEQUAL, "<=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::LESSEQUAL, "<=")); goto again; }
 #line 718 "Tokenizer.cpp"
 yy84:
 	++YYCURSOR;
 #line 125 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::NOTEQUAL, "<>")); goto again; }
+	{ tokens.push_back(Token(Token::Type::NOTEQUAL, "<>")); goto again; }
 #line 723 "Tokenizer.cpp"
 yy85:
 	++YYCURSOR;
 #line 126 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::EQEQUAL, "==")); goto again; }
+	{ tokens.push_back(Token(Token::Type::EQEQUAL, "==")); goto again; }
 #line 728 "Tokenizer.cpp"
 yy86:
 	++YYCURSOR;
 #line 127 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::GREATEREQUAL, ">=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::GREATEREQUAL, ">=")); goto again; }
 #line 733 "Tokenizer.cpp"
 yy87:
 	yych = *++YYCURSOR;
@@ -738,22 +738,22 @@ yy87:
 	}
 yy88:
 #line 128 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::RIGHTSHIFT, ">>")); goto again; }
+	{ tokens.push_back(Token(Token::Type::RIGHTSHIFT, ">>")); goto again; }
 #line 743 "Tokenizer.cpp"
 yy89:
 	++YYCURSOR;
 #line 129 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::ATEQUAL, "@=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::ATEQUAL, "@=")); goto again; }
 #line 748 "Tokenizer.cpp"
 yy90:
 	++YYCURSOR;
 #line 130 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::CIRCUMFLEXEQUAL, "^=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::CIRCUMFLEXEQUAL, "^=")); goto again; }
 #line 753 "Tokenizer.cpp"
 yy91:
 	++YYCURSOR;
 #line 131 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::VBAREQUAL, "|=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::VBAREQUAL, "|=")); goto again; }
 #line 758 "Tokenizer.cpp"
 yy92:
 	yych = *++YYCURSOR;
@@ -787,27 +787,27 @@ yy95:
 yy96:
 	++YYCURSOR;
 #line 133 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::DOUBLESTAREQUAL, "**=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::DOUBLESTAREQUAL, "**=")); goto again; }
 #line 792 "Tokenizer.cpp"
 yy97:
 	++YYCURSOR;
 #line 134 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::ELLIPSIS, "...")); goto again; }
+	{ tokens.push_back(Token(Token::Type::ELLIPSIS, "...")); goto again; }
 #line 797 "Tokenizer.cpp"
 yy98:
 	++YYCURSOR;
 #line 135 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::DOUBLESLASHEQUAL, "//=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::DOUBLESLASHEQUAL, "//=")); goto again; }
 #line 802 "Tokenizer.cpp"
 yy99:
 	++YYCURSOR;
 #line 136 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::LEFTSHIFTEQUAL, "<<=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::LEFTSHIFTEQUAL, "<<=")); goto again; }
 #line 807 "Tokenizer.cpp"
 yy100:
 	++YYCURSOR;
 #line 137 "./tokenizer.re2c"
-	{ tokens.push_back(Token(TokenType::RIGHTSHIFTEQUAL, ">>=")); goto again; }
+	{ tokens.push_back(Token(Token::Type::RIGHTSHIFTEQUAL, ">>=")); goto again; }
 #line 812 "Tokenizer.cpp"
 yy101:
 	yych = *++YYCURSOR;
@@ -865,7 +865,7 @@ yy109:
 	t1 = yyt1;
 #line 153 "./tokenizer.re2c"
 	{
-            tokens.push_back(Token(TokenType::STRING, string(t1, YYCURSOR - t1)));
+            tokens.push_back(Token(Token::Type::STRING, string(t1, YYCURSOR - t1)));
             goto again;
         }
 #line 872 "Tokenizer.cpp"

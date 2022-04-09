@@ -116,6 +116,25 @@ public:
     exprP operand;
 };
 
+class BoolOp: public expr {
+public:
+    BoolOp(boolop op, exprPs values): op(op), values(move(values)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    boolop op;
+    vector<exprP> values;
+};
+
+class Compare: public expr {
+public:
+    Compare(exprP left, vector<cmpop> ops, exprPs comparators): left(move(left)), ops(ops), comparators(move(comparators)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+public:
+    exprP left;
+    vector<cmpop> ops;
+    exprPs comparators;
+};
+
 class Num: public expr {
 public:
     Num(const string& value): value(value) {}

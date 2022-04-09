@@ -3,6 +3,14 @@
 
 using std::make_unique;
 
+unordered_set<string> Parser::keywords = {
+    "and",
+    "or",
+    "not",
+    "is",
+    "in",
+};
+
 unique_ptr<Module> Parser::file() {
     int p = mark();
     optional<stmtPs> stmts = statements();
@@ -57,14 +65,14 @@ optional<stmtPs> Parser::block() {
     int p = mark();
     optional<stmtPs> stmts;
 
-    if (expect(TokenType::NEWLINE)) {
-        if (!expect(TokenType::INDENT)) {
+    if (expect(Token::Type::NEWLINE)) {
+        if (!expect(Token::Type::INDENT)) {
             printf("expect indent after newline in block\n");
             reset(p);
             return nullopt;
         }
         stmts = statements();
-        expect(TokenType::DEDENT);
+        expect(Token::Type::DEDENT);
         return stmts;
     }
 
@@ -100,7 +108,7 @@ stmtP Parser::while_stmt() {
     int p = mark();
     if (expect("while")) {
         exprP test = atom();
-        if (expect(TokenType::COLON)) {
+        if (expect(Token::Type::COLON)) {
             optional<stmtPs> body = block();
             stmtPs orelse;
             if (body) {
@@ -123,12 +131,12 @@ optional<stmtPs> Parser::simple_stmts() {
     if ((stmt = simple_stmt())) {
         stmts.push_back(move(stmt));
         int p1 = mark();
-        while ((p = mark()) && expect(TokenType::SEMI) && (stmt = simple_stmt())) {
+        while ((p = mark()) && expect(Token::Type::SEMI) && (stmt = simple_stmt())) {
             stmts.push_back(move(stmt));
         }
         reset(p1);
-        expect(TokenType::SEMI);
-        if (!expect(TokenType::NEWLINE)) {
+        expect(Token::Type::SEMI);
+        if (!expect(Token::Type::NEWLINE)) {
             reset(p);
             return nullopt;
         }
@@ -151,14 +159,18 @@ stmtP Parser::simple_stmt() {
 exprP Parser::atom() {
     int p = mark();
     const Token& t = peek();
+    if (keywords.count(t.raw)) {
+        return nullptr;
+    }
     printf("atom rule\n");
-    if (const Token& t = expectT(TokenType::NUMBER)) {
+    if (const Token& t = expectT(Token::Type::NUMBER)) {
         return make_unique<Num>(t.raw);
     }
-    if (const Token& t = expectT(TokenType::STRING)) {
+    if (const Token& t = expectT(Token::Type::STRING)) {
         return make_unique<Str>(t.raw, nullopt);
     }
-    if (const Token& t = expectT(TokenType::NAME)) {
+    if (const Token& t = expectT(Token::Type::NAME)) {
+        printf("atom name: %s\n", t.raw.c_str());
         return make_unique<Name>(t.raw, expr_context::Load);
     }
     reset(p);
