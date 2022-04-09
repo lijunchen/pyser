@@ -54,7 +54,7 @@ int main() {
     input = "while x:\n    a.b.c\n";
     input = "while x:\n    a[a, a:b, a:b:c]\n";
     Parser parser;
-    unique_ptr<stmt> t = parser.parseWhile(input);
+    unique_ptr<Module> t = parser.parse(input);
     printf("while: %p\n", t.get());
     PrettyPrinter pprint0;
     t->accept(pprint0);

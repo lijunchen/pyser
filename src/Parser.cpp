@@ -17,6 +17,7 @@ unique_ptr<Module> Parser::file() {
     if (stmts) {
         return std::make_unique<Module>(move(*stmts));
     }
+    reset(p);
     return nullptr;
 }
 
@@ -88,16 +89,53 @@ optional<stmtPs> Parser::block() {
 stmtP Parser::compound_stmt() {
     printf("compound stmt\n");
     int p = mark();
-    optional<stmtPs> stmts;
-
+    stmtP stmt;
+    if ((stmt = function_def())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = if_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = class_def())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = with_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = for_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = try_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = while_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = match_stmt())) {
+        return stmt;
+    }
     reset(p);
     return nullptr;
 }
+
+stmtP Parser::function_def() { return nullptr; }
 
 stmtP Parser::if_stmt() {
     printf("if stmt\n");
     return nullptr;
 }
+
+stmtP Parser::class_def() { return nullptr; }
+stmtP Parser::with_stmt() { return nullptr; }
+stmtP Parser::for_stmt() { return nullptr; }
+stmtP Parser::try_stmt() { return nullptr; }
 
 /*
 while_stmt:
@@ -121,6 +159,8 @@ stmtP Parser::while_stmt() {
     reset(p);
     return nullptr;
 }
+
+stmtP Parser::match_stmt() { return nullptr; }
 
 optional<stmtPs> Parser::simple_stmts() {
     printf("simple stmts\n");
@@ -149,12 +189,95 @@ optional<stmtPs> Parser::simple_stmts() {
 
 stmtP Parser::simple_stmt() {
     int p = mark();
+
+    stmtP stmt;
+    if ((stmt = assignment())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = star_expressions())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = return_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = import_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = raise_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = pass_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = del_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = yield_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = assert_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = break_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = continue_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = global_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    if ((stmt = nonlocal_stmt())) {
+        return stmt;
+    }
+    reset(p);
+    return nullptr;
+}
+
+stmtP Parser::assignment() { return nullptr; }
+
+stmtP Parser::star_expressions() {
+    int p = mark();
     if (exprP e = pratt_parser()) {
         return make_unique<Expr>(move(e));
     }
     reset(p);
     return nullptr;
 }
+
+stmtP Parser::return_stmt() { return nullptr; }
+
+stmtP Parser::import_stmt() { return nullptr; }
+
+stmtP Parser::raise_stmt() { return nullptr; }
+
+stmtP Parser::pass_stmt() { return nullptr; }
+
+stmtP Parser::del_stmt() { return nullptr; }
+
+stmtP Parser::yield_stmt() { return nullptr; }
+
+stmtP Parser::assert_stmt() { return nullptr; }
+
+stmtP Parser::break_stmt() { return nullptr; }
+
+stmtP Parser::continue_stmt() { return nullptr; }
+
+stmtP Parser::global_stmt() { return nullptr; }
+
+stmtP Parser::nonlocal_stmt() { return nullptr; }
 
 exprP Parser::atom() {
     int p = mark();
