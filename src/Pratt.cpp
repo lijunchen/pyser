@@ -55,10 +55,6 @@ unordered_map<Token, optional<BindingPower>> postfixTable;
 vector<tuple<Fix, Assoc, vector<Token>>> table = {
     // Precedence from low to high
 
-    { Fix::In, Assoc::Left, { Token(Token::Type::COMMA, ",") }},
-
-    { Fix::Pre, Assoc::Non, { Token(Token::Type::STAR, "*") }},
-
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "if") }},
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
     { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
@@ -110,7 +106,7 @@ vector<tuple<Fix, Assoc, vector<Token>>> table = {
 
     { Fix::In, Assoc::Left, { Token(Token::Type::DOT, ".") } },
     { Fix::In, Assoc::Left, { Token(Token::Type::LPAR, "(") } },
-    { Fix::In, Assoc::Left, { Token(Token::Type::LSQB, ")") } },
+    { Fix::In, Assoc::Left, { Token(Token::Type::LSQB, "[") } },
 };
 
 void initBindingPowerTables() {
@@ -309,16 +305,6 @@ exprP Parser::pratt_parser_bp(int minBP) {
                 vector<exprP> comparators;
                 comparators.push_back(move(rhs));
                 lhs = make_unique<Compare>(move(lhs), ops, move(comparators));
-            }
-        } else if (t.type == Token::Type::COMMA) {
-            exprP rhs = pratt_parser_bp(*bp->right);
-            if (Tuple* p = dynamic_cast<Tuple*>(lhs.get())) {
-                p->elts.push_back(move(rhs));
-            } else {
-                vector<exprP> elts;
-                elts.push_back(move(lhs));
-                elts.push_back(move(rhs));
-                lhs = make_unique<Tuple>(move(elts), expr_context::Load);
             }
         } else if (t.type == Token::Type::NAME && t.raw == "if") {
             exprP test = pratt_parser_bp(*bp->right);

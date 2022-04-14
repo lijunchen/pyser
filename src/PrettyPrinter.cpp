@@ -420,7 +420,24 @@ void PrettyPrinter::visit(Return& node) {}
 void PrettyPrinter::visit(Delete& node) {}
 void PrettyPrinter::visit(Assign& node) {}
 void PrettyPrinter::visit(AugAssign& node) {}
-void PrettyPrinter::visit(AnnAssign& node) {}
+
+void PrettyPrinter::visit(AnnAssign& node) {
+    string s = indent() + "AnnAssign(\n";
+    {
+        ctx.level++;
+        node.target->accept(*this);
+        s += indent() + "target=" + ctx.s + ",\n";
+        node.annotation->accept(*this);
+        s += indent() + "annotation=" + ctx.s + ",\n";
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + "\n";
+        s += indent() + "simple=" + std::to_string(node.simple) + ",\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
 void PrettyPrinter::visit(For& node) {}
 void PrettyPrinter::visit(With& node) {}
 void PrettyPrinter::visit(Raise& node) {}
@@ -453,8 +470,31 @@ void PrettyPrinter::visit(IfExp& node) {
 
 void PrettyPrinter::visit(Dict& node) {}
 void PrettyPrinter::visit(Set& node) {}
-void PrettyPrinter::visit(Yield& node) {}
-void PrettyPrinter::visit(YieldFrom& node) {}
+
+void PrettyPrinter::visit(Yield& node) {
+    string s = "Yield(\n";
+    {
+        ctx.level++;
+        string value = "None";
+        if (node.value) { node.value->accept(*this); value = ctx.s; }
+        s += indent() + "value=" + value + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
+
+void PrettyPrinter::visit(YieldFrom& node) {
+    string s = "YieldFrom(\n";
+    {
+        ctx.level++;
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
 
 void PrettyPrinter::visit(Starred& node) {
     string s = "Starred(\n";
