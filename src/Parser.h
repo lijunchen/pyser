@@ -108,7 +108,6 @@ private:
     optional<stmtPs> simple_stmts();
     stmtP simple_stmt();
     stmtP assignment()  ;
-    stmtP star_expressions();
     stmtP return_stmt();
     stmtP import_stmt();
     stmtP raise_stmt();
@@ -122,9 +121,17 @@ private:
     stmtP nonlocal_stmt();
 
 
+    exprP star_expressions();
     exprP star_expression();
     exprP expression();
     exprP atom();
+
+    exprP annotated_rhs();
+    exprP single_target();
+    exprP single_subscript_attribute_target();
+    exprP yield_expr();
+    exprP augassign();
+
 
     exprP pratt_parser();
     exprP pratt_parser_bp(int minBP);

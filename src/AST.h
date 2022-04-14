@@ -483,16 +483,20 @@ public:
 
 class Yield: public expr {
 public:
+    Yield(exprP value): value(move(value)) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
+    exprP value;
 };
 
 class YieldFrom: public expr {
 public:
+    YieldFrom(exprP value): value(move(value)) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
+    exprP value;
 };
 
 class Starred: public expr {

@@ -3,12 +3,21 @@
 
 using std::make_unique;
 
+template<class Fn>
+struct defer {
+    Fn fn;
+    ~defer() { fn(); }
+};
+template<class Fn> defer(Fn) -> defer<Fn>;
+
 unordered_set<string> Parser::keywords = {
     "and",
     "or",
     "not",
     "is",
     "in",
+    "yield",
+    "from",
 };
 
 unique_ptr<Module> Parser::file() {
@@ -145,7 +154,7 @@ stmtP Parser::while_stmt() {
     printf("while stmt\n");
     int p = mark();
     if (expect("while")) {
-        exprP test = atom();
+        exprP test = expression();
         if (expect(Token::Type::COLON)) {
             optional<stmtPs> body = block();
             stmtPs orelse;
@@ -195,8 +204,8 @@ stmtP Parser::simple_stmt() {
         return stmt;
     }
     reset(p);
-    if ((stmt = star_expressions())) {
-        return stmt;
+    if (exprP e = star_expressions()) {
+        return make_unique<Expr>(move(e));
     }
     reset(p);
     if ((stmt = return_stmt())) {
@@ -252,10 +261,98 @@ stmtP Parser::simple_stmt() {
 //          | single_subscript_attribute_target) ':' expression ['=' annotated_rhs ] 
 //     | (star_targets '=' )+ (yield_expr | star_expressions) !'=' [TYPE_COMMENT] 
 //     | single_target augassign ~ (yield_expr | star_expressions) 
+
+/*
+case 1:
+    NAME ':' expression ['=' annotated_rhs ] 
+    a: int = xxx
+
+*/
+
 stmtP Parser::assignment() {
     int p = mark();
+    reset(p);
+
+    exprP lhs;
+    if ((lhs = expression()) && expect(Token::Type::COLON)) {
+        if (exprP anno = expression()) {
+            int p2 = mark();
+            exprP value;
+            if (expect(Token::Type::EQUAL) && (value = annotated_rhs())) {
+                return make_unique<AnnAssign>(move(lhs), move(anno), move(value), 0);
+            }
+            reset(p2);
+            return make_unique<AnnAssign>(move(lhs), nullptr, move(value), 0);
+        }
+    }
 
     reset(p);
+    return nullptr;
+}
+
+// annotated_rhs: yield_expr | star_expressions
+exprP Parser::annotated_rhs() {
+    int p = mark();
+    if (exprP e = yield_expr()) {
+        return e;
+    }
+    reset(p);
+    if (exprP e = star_expressions()) {
+        return e;
+    }
+    reset(p);
+    return nullptr;
+}
+
+// single_target:
+//     | single_subscript_attribute_target
+//     | NAME 
+//     | '(' single_target ')'
+exprP Parser::single_target() {
+    return nullptr;
+}
+
+// single_subscript_attribute_target:
+//     | t_primary '.' NAME !t_lookahead 
+//     | t_primary '[' slices ']' !t_lookahead 
+exprP Parser::single_subscript_attribute_target() {
+    return nullptr;
+}
+
+// yield_expr:
+//     | 'yield' 'from' expression 
+//     | 'yield' [star_expressions] 
+exprP Parser::yield_expr() {
+    int p = mark();
+    if (expect("yield") && expect("from")) {
+        if (exprP e = expression()) {
+            return make_unique<YieldFrom>(move(e));
+        }
+    }
+    reset(p);
+    if (expect("yield")) {
+        exprP e = star_expressions();
+        return make_unique<Yield>(move(e));
+    }
+    reset(p);
+    return nullptr;
+}
+
+// augassign:
+//     | '+=' 
+//     | '-=' 
+//     | '*=' 
+//     | '@=' 
+//     | '/=' 
+//     | '%=' 
+//     | '&=' 
+//     | '|=' 
+//     | '^=' 
+//     | '<<=' 
+//     | '>>=' 
+//     | '**=' 
+//     | '//=' 
+exprP Parser::augassign() {
     return nullptr;
 }
 
@@ -263,10 +360,21 @@ stmtP Parser::assignment() {
 //     | star_expression (',' star_expression )+ [','] 
 //     | star_expression ',' 
 //     | star_expression
-stmtP Parser::star_expressions() {
+exprP Parser::star_expressions() {
     int p = mark();
-    if (exprP e = pratt_parser()) {
-        return make_unique<Expr>(move(e));
+    exprPs elts;
+    if (exprP e = star_expression()) {
+        elts.push_back(move(e));
+        int p1 = mark();
+        while ((p1 = mark()) && expect(Token::Type::COMMA) && (e = star_expression())) {
+            elts.push_back(move(e));
+        }
+        reset(p1);
+        expect(Token::Type::COMMA);
+        if (elts.size() > 1) {
+            return make_unique<Tuple>(move(elts), expr_context::Load);
+        }
+        return move(elts[0]);
     }
     reset(p);
     return nullptr;
@@ -275,7 +383,25 @@ stmtP Parser::star_expressions() {
 // star_expression:
 //     | '*' bitwise_or 
 //     | expression
-// stmtP Parser::star_expression() {}
+exprP Parser::star_expression() {
+    int p = mark();
+    if (expect(Token::Type::STAR)) {
+        const Token& t = Token(Token::Type::VBAR, "|");
+        if (exprP e = pratt_parser()) {
+            return make_unique<Starred>(move(e), expr_context::Load);
+        }
+    }
+    reset(p);
+    if (exprP e = expression()) {
+        return e;
+    }
+    reset(p);
+    return nullptr;
+}
+
+exprP Parser::expression() {
+    return pratt_parser();
+}
 
 stmtP Parser::return_stmt() { return nullptr; }
 
@@ -287,7 +413,15 @@ stmtP Parser::pass_stmt() { return nullptr; }
 
 stmtP Parser::del_stmt() { return nullptr; }
 
-stmtP Parser::yield_stmt() { return nullptr; }
+stmtP Parser::yield_stmt() {
+    printf("yield stmt\n");
+    int p = mark();
+    if (exprP e = yield_expr()) {
+        return make_unique<Expr>(move(e));
+    }
+    reset(p);
+    return nullptr;
+}
 
 stmtP Parser::assert_stmt() { return nullptr; }
 

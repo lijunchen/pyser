@@ -55,11 +55,21 @@ int main() {
     input = "while x:\n    a[a, a:b, a:b:c]\n";
     input = "1,2,3\n";
     input = "1 if 2 else a, b, c\n";
-    input = "*a, *b, *c\n";
+    input = "*a is b\n";
+    input = "a, b, c\n";
+    input = "yield from a\n";
+    input = "a: int = 1\n";
     Parser parser;
-    unique_ptr<Module> t = parser.parse(input);
-    printf("while: %p\n", t.get());
+    unique_ptr<Module> t = nullptr;
+    try {
+        t = parser.parse(input);
+    } catch (runtime_error& e) {
+        printf("error: %s\n", e.what());
+    }
+    printf("Module: %p\n", t.get());
     PrettyPrinter pprint0;
-    t->accept(pprint0);
+    if (t) {
+        t->accept(pprint0);
+    }
     return 0;
 }
