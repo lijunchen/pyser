@@ -91,6 +91,15 @@ private:
         }
     }
 
+    exprP expectN() {
+        const Token& t = peek();
+        if (t.type == Token::Type::NAME) {
+            next();
+            return make_unique<Name>(t.raw, expr_context::Load);
+        }
+        return nullptr;
+    }
+
     bool expect(const string& tok) {
         const Token& t = peek();
         if (t.raw == tok) {
@@ -129,7 +138,7 @@ private:
 
     optional<stmtPs> simple_stmts();
     stmtP simple_stmt();
-    stmtP assignment()  ;
+    stmtP assignment();
     stmtP return_stmt();
     stmtP import_stmt();
     stmtP raise_stmt();
@@ -148,9 +157,10 @@ private:
     exprP expression();
     exprP bitwise_or();
 
-    exprP star_named_expressions();
+    exprPs star_named_expressions();
     exprP star_named_expression();
     exprP named_expression();
+    exprP assignment_expression();
 
     exprP atom();
 

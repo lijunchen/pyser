@@ -573,4 +573,14 @@ public:
     exprP optional_vars;
 };
 
+class NamedExpr: public expr {
+public:
+    NamedExpr(exprP target, exprP value): target(move(target)), value(move(value)) {}
+    virtual void accept(Visitor& visitor) { visitor.visit(*this); }
+
+public:
+    exprP target;
+    exprP value;
+};
+
 #endif /* AST_H */

@@ -513,3 +513,5 @@ void PrettyPrinter::visit(arguments& node) {}
 void PrettyPrinter::visit(arg& node) {}
 void PrettyPrinter::visit(alias& node) {}
 void PrettyPrinter::visit(withitem& node) {}
+
+void PrettyPrinter::visit(NamedExpr& node) {}

@@ -24,8 +24,14 @@ unique_ptr<Module> Parser::file() {
     int p = mark();
     optional<stmtPs> stmts = statements();
     if (stmts) {
+        while (expect(Token::Type::NEWLINE));
+        if (!expect(Token::Type::ENDMARKER)) {
+            goto parse_error;
+        }
         return std::make_unique<Module>(move(*stmts));
     }
+    parse_error:
+    throw std::runtime_error("SyntaxError: invalid syntax");
     reset(p);
     return nullptr;
 }
@@ -386,8 +392,8 @@ exprP Parser::star_expressions() {
 exprP Parser::star_expression() {
     int p = mark();
     if (expect(Token::Type::STAR)) {
-        const Token& t = Token(Token::Type::VBAR, "|");
-        if (exprP e = pratt_parser()) {
+        exprP e = bitwise_or();
+        if (e) {
             return make_unique<Starred>(move(e), expr_context::Load);
         }
     }
@@ -401,6 +407,75 @@ exprP Parser::star_expression() {
 
 exprP Parser::expression() {
     return pratt_parser();
+}
+
+exprP Parser::bitwise_or() {
+    int p = mark();
+    static const Token& t = Token(Token::Type::VBAR, "|");
+    optional<BindingPower> bp = infix_binding_power(t);
+    if (exprP e = pratt_parser_bp(*bp->left)) {
+        return e;
+    }
+    reset(p);
+    return nullptr;
+}
+
+exprPs Parser::star_named_expressions() {
+    int p = mark();
+    exprPs elts;
+    if (exprP e = star_named_expression()) {
+        elts.push_back(move(e));
+        int p1 = mark();
+        while ((p1 = mark()) && expect(Token::Type::COMMA) && (e = star_named_expression())) {
+            elts.push_back(move(e));
+        }
+        reset(p1);
+        expect(Token::Type::COMMA);
+        return elts;
+    }
+    reset(p);
+    return {};
+}
+
+exprP Parser::star_named_expression() {
+    int p = mark();
+    if (expect(Token::Type::STAR)) {
+        exprP e = bitwise_or();
+        if (e) {
+            return make_unique<Starred>(move(e), expr_context::Load);
+        }
+    }
+    reset(p);
+    if (exprP e = named_expression()) {
+        return e;
+    }
+    reset(p);
+    return nullptr;
+}
+
+exprP Parser::named_expression() {
+    int p = mark();
+    exprP e;
+    if ((e = assignment_expression())) {
+        return e;
+    }
+    reset(p);
+    if ((e = expression()) && !lookahead(Token::Type::COLONEQUAL)) {
+        return e;
+    }
+    reset(p);
+    return nullptr;
+}
+
+exprP Parser::assignment_expression() {
+    int p = mark();
+    exprP target;
+    exprP value;
+    if ((target = expectN()) && (value = expression())) {
+        return make_unique<NamedExpr>(move(target), move(value));
+    }
+    reset(p);
+    return nullptr;
 }
 
 stmtP Parser::return_stmt() { return nullptr; }
