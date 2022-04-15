@@ -59,6 +59,7 @@ int main() {
     input = "a, b, c\n";
     input = "yield from a\n";
     input = "a: int = 1\n";
+    input = "*a | b\n";
     Parser parser;
     unique_ptr<Module> t = nullptr;
     try {

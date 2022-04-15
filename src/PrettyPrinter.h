@@ -55,7 +55,7 @@ public:
     virtual void visit(Break&) override;
     virtual void visit(Continue&) override;
     virtual void visit(BoolOp&) override;
-    virtual void visit(NamedExpr&) override { throw runtime_error("not imp yet"); };
+    virtual void visit(NamedExpr&) override;
     virtual void visit(BinOp&) override;
     virtual void visit(UnaryOp&) override;
     virtual void visit(Lambda&) override;
