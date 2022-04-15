@@ -14,18 +14,6 @@ using std::unique_ptr;
 using std::unordered_map;
 using std::tuple;
 
-class BindingPower {
-public:
-    BindingPower(optional<int> left, optional<int> right) : left(left), right(right) {}
-
-public:
-    optional<int> left;
-    optional<int> right;
-};
-
-enum class Fix { Pre, Post, In };
-enum class Assoc { Non, Left, Right };
-
 string fixToString(Fix f) {
     switch (f) {
     case Fix::Pre:
@@ -48,69 +36,70 @@ string assocToString(Assoc at) {
     }
 }
 
-unordered_map<Token, optional<BindingPower>> infixTable;
-unordered_map<Token, optional<BindingPower>> prefixTable;
-unordered_map<Token, optional<BindingPower>> postfixTable;
+unordered_map<Token, optional<BindingPower>> Parser::infixTable;
+unordered_map<Token, optional<BindingPower>> Parser::prefixTable;
+unordered_map<Token, optional<BindingPower>> Parser::postfixTable;
+vector<tuple<Fix, Assoc, vector<Token>>> Parser::table;
 
-vector<tuple<Fix, Assoc, vector<Token>>> table = {
-    // Precedence from low to high
-
-    { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "if") }},
-    { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
-    { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
-
-    { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "not") }},
-
-    { Fix::In, Assoc::Left, {
-                Token(Token::Type::EQEQUAL, "=="),
-                Token(Token::Type::NOTEQUAL, "!="),
-                Token(Token::Type::LESSEQUAL, "<="),
-                Token(Token::Type::LESS, "<"),
-                Token(Token::Type::GREATEREQUAL, ">="),
-                Token(Token::Type::GREATER, ">"),
-                Token(Token::Type::NAME, "not in"),
-                Token(Token::Type::NAME, "in"),
-                Token(Token::Type::NAME, "is not"),
-                Token(Token::Type::NAME, "is"),
-                } },
-
-    { Fix::In, Assoc::Left, { Token(Token::Type::VBAR, "|") } },       // |
-    { Fix::In, Assoc::Left, { Token(Token::Type::CIRCUMFLEX, "^") } }, // ^
-    { Fix::In, Assoc::Left, { Token(Token::Type::AMPER, "&") } },      // &
-
-    { Fix::In, Assoc::Left, {
-                Token(Token::Type::LEFTSHIFT, "<<"),
-                Token(Token::Type::RIGHTSHIFT, ">>"),
-                } },
-
-    { Fix::In, Assoc::Left, {
-                Token(Token::Type::PLUS, "+"),
-                Token(Token::Type::MINUS, "-"),
-                } },
-
-    { Fix::In, Assoc::Left, {
-                Token(Token::Type::STAR, "*"),
-                Token(Token::Type::SLASH, "/"),
-                Token(Token::Type::DOUBLESLASH, "//"),
-                Token(Token::Type::PERCENT, "%"),
-                Token(Token::Type::AT, "@"),
-                } },
-
-    { Fix::Pre, Assoc::Non, { Token(Token::Type::PLUS, "+") } },
-    { Fix::Pre, Assoc::Non, { Token(Token::Type::MINUS, "-") } },
-    { Fix::Pre, Assoc::Non, { Token(Token::Type::TILDE, "~") } },
-
-    { Fix::In, Assoc::Right, { Token(Token::Type::DOUBLESTAR, "**") } },
-
-    { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "await") }},
-
-    { Fix::In, Assoc::Left, { Token(Token::Type::DOT, ".") } },
-    { Fix::In, Assoc::Left, { Token(Token::Type::LPAR, "(") } },
-    { Fix::In, Assoc::Left, { Token(Token::Type::LSQB, "[") } },
-};
-
-void initBindingPowerTables() {
+void Parser::initBindingPowerTables() {
     printf("initBindingPowerTables\n");
+    table = {
+        // Precedence from low to high
+
+        { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "if") }},
+        { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
+        { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
+
+        { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "not") }},
+
+        { Fix::In, Assoc::Left, {
+                    Token(Token::Type::EQEQUAL, "=="),
+                    Token(Token::Type::NOTEQUAL, "!="),
+                    Token(Token::Type::LESSEQUAL, "<="),
+                    Token(Token::Type::LESS, "<"),
+                    Token(Token::Type::GREATEREQUAL, ">="),
+                    Token(Token::Type::GREATER, ">"),
+                    Token(Token::Type::NAME, "not in"),
+                    Token(Token::Type::NAME, "in"),
+                    Token(Token::Type::NAME, "is not"),
+                    Token(Token::Type::NAME, "is"),
+                    } },
+
+        { Fix::In, Assoc::Left, { Token(Token::Type::VBAR, "|") } },       // |
+        { Fix::In, Assoc::Left, { Token(Token::Type::CIRCUMFLEX, "^") } }, // ^
+        { Fix::In, Assoc::Left, { Token(Token::Type::AMPER, "&") } },      // &
+
+        { Fix::In, Assoc::Left, {
+                    Token(Token::Type::LEFTSHIFT, "<<"),
+                    Token(Token::Type::RIGHTSHIFT, ">>"),
+                    } },
+
+        { Fix::In, Assoc::Left, {
+                    Token(Token::Type::PLUS, "+"),
+                    Token(Token::Type::MINUS, "-"),
+                    } },
+
+        { Fix::In, Assoc::Left, {
+                    Token(Token::Type::STAR, "*"),
+                    Token(Token::Type::SLASH, "/"),
+                    Token(Token::Type::DOUBLESLASH, "//"),
+                    Token(Token::Type::PERCENT, "%"),
+                    Token(Token::Type::AT, "@"),
+                    } },
+
+        { Fix::Pre, Assoc::Non, { Token(Token::Type::PLUS, "+") } },
+        { Fix::Pre, Assoc::Non, { Token(Token::Type::MINUS, "-") } },
+        { Fix::Pre, Assoc::Non, { Token(Token::Type::TILDE, "~") } },
+
+        { Fix::In, Assoc::Right, { Token(Token::Type::DOUBLESTAR, "**") } },
+
+        { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "await") }},
+
+        { Fix::In, Assoc::Left, { Token(Token::Type::DOT, ".") } },
+        { Fix::In, Assoc::Left, { Token(Token::Type::LPAR, "(") } },
+        { Fix::In, Assoc::Left, { Token(Token::Type::LSQB, "[") } },
+    };
+
     for (int i = 0; i < table.size(); i++) {
         int l = i + 1;
         Fix bt = std::get<0>(table[i]);
@@ -136,21 +125,21 @@ void initBindingPowerTables() {
     }
 }
 
-optional<BindingPower> prefix_binding_power(const Token& t) {
+optional<BindingPower> Parser::prefix_binding_power(const Token& t) {
     if (prefixTable.count(t)) {
         return prefixTable[t];
     }
     return nullopt;
 }
 
-optional<BindingPower> post_binding_power(const Token& t) {
+optional<BindingPower> Parser::post_binding_power(const Token& t) {
     if (postfixTable.count(t)) {
         return postfixTable[t];
     }
     return nullopt;
 }
 
-optional<BindingPower> infix_binding_power(const Token& t) {
+optional<BindingPower> Parser::infix_binding_power(const Token& t) {
     if (infixTable.count(t)) {
         return infixTable[t];
     }

@@ -6,6 +6,8 @@
 #include <memory>
 #include <optional>
 #include <unordered_set>
+#include <unordered_map>
+#include <utility>
 
 
 #include "AST.h"
@@ -19,8 +21,28 @@ using std::make_unique;
 using std::nullopt;
 using std::optional;
 using std::unordered_set;
+using std::unordered_map;
+using std::tuple;
 
 class Token;
+
+void initBindingPowerTables();
+
+class BindingPower {
+public:
+    BindingPower(optional<int> left, optional<int> right) : left(left), right(right) {}
+
+public:
+    optional<int> left;
+    optional<int> right;
+};
+
+enum class Fix { Pre, Post, In };
+enum class Assoc { Non, Left, Right };
+
+string fixToString();
+string assocToString();
+
 
 void initBindingPowerTables();
 
@@ -124,6 +146,12 @@ private:
     exprP star_expressions();
     exprP star_expression();
     exprP expression();
+    exprP bitwise_or();
+
+    exprP star_named_expressions();
+    exprP star_named_expression();
+    exprP named_expression();
+
     exprP atom();
 
     exprP annotated_rhs();
@@ -147,6 +175,17 @@ private:
     Tokenizer tokenizer;
 private:
     static unordered_set<string> keywords;
+public:
+    // pratt related
+    static unordered_map<Token, optional<BindingPower>> infixTable;
+    static unordered_map<Token, optional<BindingPower>> prefixTable;
+    static unordered_map<Token, optional<BindingPower>> postfixTable;
+    static vector<tuple<Fix, Assoc, vector<Token>>> table;
+    static optional<BindingPower> prefix_binding_power(const Token& t);
+    static optional<BindingPower> post_binding_power(const Token& t);
+    static optional<BindingPower> infix_binding_power(const Token& t);
+
+    void initBindingPowerTables();
 };
 
 #endif /* PARSER_H */
