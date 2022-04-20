@@ -15,7 +15,7 @@ This project demostrate how to
 Note, even though I claim it is zero dependencies, I decided to use [re2c](https://github.com/skvadrik/re2c) to ramp up tokenizer.
 
 References and Resources:
--  [AST definition](https://github.com/python/cpython/blob/main/Parser/Python.asdl)
+- [AST definition](https://github.com/python/cpython/blob/main/Parser/Python.asdl)
 - [Token definition](https://github.com/python/cpython/blob/main/Grammar/Tokens)
 - [Full Grammar specification](https://docs.python.org/3.10/reference/grammar.html)
 - [Simple but Powerful Pratt Parsing](https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html)

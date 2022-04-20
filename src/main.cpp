@@ -60,8 +60,11 @@ int main() {
     input = "yield from a\n";
     input = "a: int = 1\n";
     input = "*a | b\n";
+    input = "a[b].c: int = 1\n";
+    input = "a = b = c = d + e\na += b * d\n";
+    // input = "a = b\n";
     Parser parser;
-    unique_ptr<Module> t = nullptr;
+    unique_ptr<ast> t = nullptr;
     try {
         t = parser.parse(input);
     } catch (runtime_error& e) {
