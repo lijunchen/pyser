@@ -26,6 +26,7 @@ unique_ptr<Module> Parser::file() {
     if (stmts) {
         while (expect(Token::Type::NEWLINE));
         if (!expect(Token::Type::ENDMARKER)) {
+            printf("expect ENDMARKER, but got %s\n", peek().toString().c_str());
             goto parse_error;
         }
         return std::make_unique<Module>(move(*stmts));
@@ -36,15 +37,23 @@ unique_ptr<Module> Parser::file() {
     return nullptr;
 }
 
+// statements: statement+ 
 optional<stmtPs> Parser::statements() {
     printf("statements\n");
     int p = mark();
 
     stmtPs stmts;
-    if (stmtP stmt = statement()) {
-        stmts.push_back(move(stmt));
-        while (stmtP stmt = statement()) {
-            stmts.push_back(move(stmt));
+    if (optional<stmtPs> xs = statement()) {
+        printf("!!!1match one statm\n");
+        for (size_t i = 0; i < xs->size(); i++) {
+            stmts.push_back(move(xs->operator[](i)));
+        }
+        
+        printf("try nexst token: %s\n", peek().toString().c_str());
+        while (optional<stmtPs> xs = statement()) {
+            for (size_t i = 0; i < xs->size(); i++) {
+                stmts.push_back(move(xs->operator[](i)));
+            }
         }
         return stmts;
     }
@@ -53,22 +62,24 @@ optional<stmtPs> Parser::statements() {
     return nullopt;
 }
 
-stmtP Parser::statement() {
+// statement: compound_stmt  | simple_stmts 
+optional<stmtPs> Parser::statement() {
     printf("statement\n");
     int p = mark();
-    stmtP s;
 
-    if ((s = compound_stmt())) {
-        return s;
+    if (stmtP s = compound_stmt()) {
+        stmtPs ret;
+        ret.push_back(move(s));
+        return ret;
     }
 
     reset(p);
-    if ((s = simple_stmt())) {
-        return s;
+    if (optional<stmtPs> stmts = simple_stmts()) {
+        return stmts;
     }
 
     reset(p);
-    return nullptr;
+    return nullopt;
 }
 
 /*
@@ -177,6 +188,9 @@ stmtP Parser::while_stmt() {
 
 stmtP Parser::match_stmt() { return nullptr; }
 
+// simple_stmts:
+//     | simple_stmt !';' NEWLINE  # Not needed, there for speedup
+//     | ';'.simple_stmt+ [';'] NEWLINE 
 optional<stmtPs> Parser::simple_stmts() {
     printf("simple stmts\n");
     int p = mark();
@@ -186,7 +200,7 @@ optional<stmtPs> Parser::simple_stmts() {
     if ((stmt = simple_stmt())) {
         stmts.push_back(move(stmt));
         int p1 = mark();
-        while ((p = mark()) && expect(Token::Type::SEMI) && (stmt = simple_stmt())) {
+        while ((p1 = mark()) && expect(Token::Type::SEMI) && (stmt = simple_stmt())) {
             stmts.push_back(move(stmt));
         }
         reset(p1);
@@ -195,6 +209,7 @@ optional<stmtPs> Parser::simple_stmts() {
             reset(p);
             return nullopt;
         }
+        printf("simple stmts succ, next: %s\n", peek().toString().c_str());
         return stmts;
     }
 
@@ -267,19 +282,13 @@ stmtP Parser::simple_stmt() {
 //          | single_subscript_attribute_target) ':' expression ['=' annotated_rhs ] 
 //     | (star_targets '=' )+ (yield_expr | star_expressions) !'=' [TYPE_COMMENT] 
 //     | single_target augassign ~ (yield_expr | star_expressions) 
-
-/*
-case 1:
-    NAME ':' expression ['=' annotated_rhs ] 
-    a: int = xxx
-
-*/
-
 stmtP Parser::assignment() {
+    printf("assignment\n");
     int p = mark();
-    reset(p);
-
     exprP lhs;
+    // case 1:
+    //     NAME ':' expression ['=' annotated_rhs ] 
+    printf("assignment case 1\n");
     if ((lhs = expression()) && expect(Token::Type::COLON)) {
         if (exprP anno = expression()) {
             int p2 = mark();
@@ -290,6 +299,85 @@ stmtP Parser::assignment() {
             reset(p2);
             return make_unique<AnnAssign>(move(lhs), nullptr, move(value), 0);
         }
+    }
+    reset(p);
+
+    // case 2:
+    //     ('(' single_target ')' | single_subscript_attribute_target) ':' expression ['=' annotated_rhs ] 
+    //     => 
+    //     '(' single_target ')' ':' expression ['=' annotated_rhs ] 
+    //     single_subscript_attribute_target ':' expression ['=' annotated_rhs ] 
+    printf("assignment case 2\n");
+    if (expect(Token::Type::LPAR) && (lhs = single_target()) && expect(Token::Type::RPAR)) {
+        if (expect(Token::Type::COLON)) {
+            if (exprP anno = expression()) {
+                int p2 = mark();
+                exprP rhs;
+                if (expect(Token::Type::EQUAL) && (rhs = annotated_rhs())) {
+                    return make_unique<AnnAssign>(move(lhs), move(anno), move(rhs), 0);
+                }
+                reset(p2);
+                return make_unique<AnnAssign>(move(lhs), move(anno), nullptr, 0);
+            }
+        }
+    }
+    reset(p);
+    if ((lhs = single_subscript_attribute_target())) {
+        if (expect(Token::Type::COLON)) {
+           if (exprP anno = expression()) {
+               int p2 = mark();
+               exprP rhs;
+               if (expect(Token::Type::EQUAL) && (rhs = annotated_rhs())) {
+                   return make_unique<AnnAssign>(move(lhs), move(anno), move(rhs), 0);
+               }
+               reset(p2);
+               return make_unique<AnnAssign>(move(lhs), move(anno), nullptr, 0);
+           }
+        }
+    }
+
+    // case 3:
+    //     (star_targets '=' )+ (yield_expr | star_expressions) !'=' [TYPE_COMMENT] 
+    printf("assignment case 3\n");
+    reset(p);
+    exprPs ts;
+    exprP t;
+    if ((t = star_targets()) && expect(Token::Type::EQUAL)) {
+        ts.push_back(move(t));
+        int p2 = mark();
+        while ((p2 = mark()) && (t = star_targets()) && expect(Token::Type::EQUAL)) {
+            ts.push_back(move(t));
+        }
+        reset(p2);
+        int p1 = mark();
+        exprP rhs;
+        if ((p1 = mark()) && (rhs = yield_expr()) && !lookahead(Token::Type::EQUAL)) {
+            return make_unique<Assign>(move(ts), move(rhs));
+        }
+        reset(p1);
+        int p0 = mark();
+        if ((p0 = mark()) && (rhs = star_expressions()) && !lookahead(Token::Type::EQUAL)) {
+            return make_unique<Assign>(move(ts), move(rhs));
+        }
+        reset(p0);
+    }
+
+    // case 4:
+    //     single_target augassign ~ (yield_expr | star_expressions) 
+    reset(p);
+    printf("assignment case 4\n");
+    if (exprP t = single_target()) {
+        if (optional<operator_> op = augassign()) {
+            int p1 = mark();
+            if (exprP rhs = yield_expr()) {
+                return make_unique<AugAssign>(move(t), *op, move(rhs));
+            }
+            reset(p1);
+            if (exprP rhs = star_expressions()) {
+                return make_unique<AugAssign>(move(t), *op, move(rhs));
+            }
+        }
+
     }
 
     reset(p);
@@ -315,6 +403,24 @@ exprP Parser::annotated_rhs() {
 //     | NAME 
 //     | '(' single_target ')'
 exprP Parser::single_target() {
+    int p = mark();
+    if (exprP e = single_subscript_attribute_target()) {
+        return e;
+    }
+    reset(p);
+    if(unique_ptr<Name> name = expectN()) {
+        name->ctx = expr_context::Store;
+        return name;
+    }
+    reset(p);
+    if (expect(Token::Type::LPAR)) {
+        if (exprP e = single_target()) {
+            if (expect(Token::Type::RPAR)) {
+                return e;
+            }
+        }
+    }
+    reset(p);
     return nullptr;
 }
 
@@ -322,6 +428,27 @@ exprP Parser::single_target() {
 //     | t_primary '.' NAME !t_lookahead 
 //     | t_primary '[' slices ']' !t_lookahead 
 exprP Parser::single_subscript_attribute_target() {
+    int p = mark();
+    if (exprP t = t_primary()) {
+        expr* target = t.get();
+        if (Attribute* attr = dynamic_cast<Attribute*>(target)) {
+            return t;
+        } else if (Subscript* sub = dynamic_cast<Subscript*>(target)) {
+            return t;
+        }
+    }
+    reset(p);
+    return nullptr;
+}
+
+exprP Parser::t_primary() {
+    int p = mark();
+    static const Token& t = Token(Token::Type::DOT, ".");
+    optional<BindingPower> bp = infix_binding_power(t);
+    if (exprP e = pratt_parser_bp(*bp->left)) {
+        return e;
+    }
+    reset(p);
     return nullptr;
 }
 
@@ -358,8 +485,32 @@ exprP Parser::yield_expr() {
 //     | '>>=' 
 //     | '**=' 
 //     | '//=' 
-exprP Parser::augassign() {
-    return nullptr;
+optional<operator_> Parser::augassign() {
+    int p = mark();
+    const Token& t = peek();
+    optional<operator_> op = nullopt;
+    switch (t.type) {
+        case Token::Type::PLUSEQUAL: op = operator_::Add; break;
+        case Token::Type::MINEQUAL: op = operator_::Sub; break;
+        case Token::Type::STAREQUAL: op = operator_::Mult; break;
+        case Token::Type::ATEQUAL: op = operator_::MatMult; break;
+        case Token::Type::SLASHEQUAL: op = operator_::Div; break;
+        case Token::Type::PERCENTEQUAL: op = operator_::Mod; break;
+        case Token::Type::AMPEREQUAL: op = operator_::BitAnd; break;
+        case Token::Type::VBAREQUAL: op = operator_::BitOr; break;
+        case Token::Type::CIRCUMFLEXEQUAL: op = operator_::BitXor; break;
+        case Token::Type::LEFTSHIFTEQUAL: op = operator_::LShift; break;
+        case Token::Type::RIGHTSHIFTEQUAL: op = operator_::RShift; break;
+        case Token::Type::DOUBLESTAREQUAL: op = operator_::Pow; break;
+        case Token::Type::DOUBLESLASHEQUAL: op = operator_::FloorDiv; break;
+        default: op = nullopt;
+    }
+    if (op) {
+        next();
+        return op;
+    }
+    reset(p);
+    return nullopt;
 }
 
 // star_expressions:
@@ -406,7 +557,8 @@ exprP Parser::star_expression() {
 }
 
 exprP Parser::expression() {
-    return pratt_parser();
+    exprP e = pratt_parser();
+    return e;
 }
 
 exprP Parser::bitwise_or() {
@@ -584,6 +736,169 @@ exprP Parser::slice() {
     exprP e;
     if (exprP e = pratt_parser()) {
         return e;
+    }
+
+    reset(p);
+    return nullptr;
+}
+
+// # NOTE: star_targets may contain *bitwise_or, targets may not.
+// star_targets:
+//     | star_target !',' 
+//     | star_target (',' star_target )* [','] 
+
+exprP Parser::star_targets() {
+    printf("star_targets\n");
+    int p = mark();
+    if (exprP t = star_target()) {
+        if (!lookahead(Token::Type::COMMA)) {
+            return t;
+        }
+    }
+    reset(p);
+    exprPs ts;
+    if (exprP t = star_target()) {
+        int p1 = mark();
+        while ((p1 = mark()) && expect(Token::Type::COMMA) && (t = star_target())) {
+            ts.push_back(move(t));
+        }
+        reset(p1);
+        return make_unique<Tuple>(move(ts), expr_context::Store);
+    }
+
+    reset(p);
+    return nullptr;
+}
+
+// star_target:
+//     | '*' (!'*' star_target) 
+//     | target_with_star_atom
+exprP Parser::star_target() {
+    printf("star_target\n");
+    int p = mark();
+    if (expect(Token::Type::STAR) && !lookahead(Token::Type::STAR)) {
+        exprP e = star_target();
+        if (e) {
+            return make_unique<Starred>(move(e), expr_context::Store);
+        }
+    }
+
+    reset(p);
+    if (exprP e = target_with_star_atom()) {
+        return e;
+    }
+
+    reset(p);
+    return nullptr;
+}
+
+// target_with_star_atom:
+//     | t_primary '.' NAME !t_lookahead 
+//     | t_primary '[' slices ']' !t_lookahead 
+//     | star_atom
+exprP Parser::target_with_star_atom() {
+    printf("target_with_star_atom\n");
+    int p = mark();
+    if (exprP t = t_primary()) {
+        expr* target = t.get();
+        if (Attribute* attr = dynamic_cast<Attribute*>(target)) {
+            return t;
+        } else if (Subscript* sub = dynamic_cast<Subscript*>(target)) {
+            return t;
+        }
+    }
+    reset(p);
+    if (exprP t = star_atom()) {
+        return t;
+    }
+    reset(p);
+    return nullptr;
+}
+
+// star_targets_list_seq: ','.star_target+ [','] 
+exprPs Parser::star_targets_list_seq() {
+    printf("star_targets_list_seq\n");
+    int p = mark();
+    exprP t;
+    exprPs ts;
+    if ((t = star_target())) {
+        ts.push_back(move(t));
+        int p1 = mark();
+        while ((p1 = mark()) && expect(Token::Type::COMMA) && (t = star_target())) {
+            ts.push_back(move(t));
+        }
+        reset(p1);
+        expect(Token::Type::COMMA);
+        return ts;
+    }
+    reset(p);
+    return {};
+}
+
+// star_targets_tuple_seq:
+//     | star_target (',' star_target )+ [','] 
+//     | star_target ',' 
+exprPs Parser::star_targets_tuple_seq() {
+    printf("star_targets_tuple_seq\n");
+    int p = mark();
+    exprPs xs;
+    exprP x;
+    if ((x = star_target())) {
+        xs.push_back(move(x));
+        int p2 = mark();
+        while ((p2 = mark()) && expect(Token::Type::COMMA) && (x = star_target())) {
+            xs.push_back(move(x));
+        }
+        reset(p2);
+        expect(Token::Type::COMMA);
+        return xs;
+    }
+
+    reset(p);
+    xs.clear();
+    if ((x = star_target()) && expect(Token::Type::COMMA)) {
+        xs.push_back(move(x));
+        return xs;
+    }
+
+    reset(p);
+    return {};
+}
+
+// star_atom:
+//     | NAME 
+//     | '(' target_with_star_atom ')' 
+//     | '(' [star_targets_tuple_seq] ')' 
+//     | '[' [star_targets_list_seq] ']'
+exprP Parser::star_atom() {
+    printf("star_atom\n");
+    int p = mark();
+
+    if (unique_ptr<Name> name = expectN()) {
+        name->ctx = expr_context::Store;
+        return name;
+    }
+
+    exprP a;
+    reset(p);
+    if (expect(Token::Type::LPAR) && (a = target_with_star_atom()) && expect(Token::Type::RPAR)) {
+        return a;
+    }
+
+    reset(p);
+    if (expect(Token::Type::LPAR)) {
+        exprPs ts = star_targets_tuple_seq();
+        if (expect(Token::Type::RPAR)) {
+            return make_unique<Tuple>(move(ts), expr_context::Store);
+        }
+    }
+
+    reset(p);
+    if (expect(Token::Type::LSQB)) {
+        exprPs ts = star_targets_list_seq();
+        if (expect(Token::Type::RSQB)) {
+            return make_unique<List>(move(ts), expr_context::Store);
+        }
     }
 
     reset(p);

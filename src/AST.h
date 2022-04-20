@@ -73,6 +73,7 @@ class Assign: public stmt {
 public:
     Assign(exprPs targets, exprP value)
         : targets(move(targets)), value(move(value)) {}
+    virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
     exprPs targets;

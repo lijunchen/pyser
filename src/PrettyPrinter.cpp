@@ -418,8 +418,44 @@ void PrettyPrinter::visit(FunctionDef& node) {}
 void PrettyPrinter::visit(ClassDef& node) {}
 void PrettyPrinter::visit(Return& node) {}
 void PrettyPrinter::visit(Delete& node) {}
-void PrettyPrinter::visit(Assign& node) {}
-void PrettyPrinter::visit(AugAssign& node) {}
+
+void PrettyPrinter::visit(Assign& node) {
+    string s = indent() + "Assign(\n";
+    {
+        ctx.level++;
+        s += indent() + "targets=[\n";
+        {
+            ctx.level++;
+            for (size_t i = 0; i < node.targets.size(); i++) {
+                node.targets[i]->accept(*this);
+                s += indent() + ctx.s + ",\n";
+            }
+            ctx.level--;
+        }
+        s += indent() + "],\n";
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+
+}
+
+void PrettyPrinter::visit(AugAssign& node) {
+    string s = indent() + "AugAssign(\n";
+    {
+        ctx.level++;
+        node.target->accept(*this);
+        s += indent() + "target=" + ctx.s + ",\n";
+        s += indent() + "op=" + operatorToString(node.op) + ",\n";
+        node.value->accept(*this);
+        s += indent() + "value=" + ctx.s + "\n";
+        ctx.level--;
+    }
+    s += indent() + ")";
+    ctx.s = s;
+}
 
 void PrettyPrinter::visit(AnnAssign& node) {
     string s = indent() + "AnnAssign(\n";

@@ -52,7 +52,7 @@ public:
         initBindingPowerTables();
     }
     
-    unique_ptr<Module> parse(const string& input) {
+    unique_ptr<ast> parse(const string& input) {
         tokenizer.tokens = tokenizer.tokenize(input);
         return file();
     }
@@ -71,7 +71,7 @@ private:
 
     bool expect(Token::Type type) {
         const Token& t = peek();
-        printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
+        // printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
         if (t.type == type) {
             next();
             return true;
@@ -82,7 +82,7 @@ private:
 
     Token expectT(Token::Type type) {
         const Token& t = peek();
-        printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
+        // printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
         if (t.type == type) {
             next();
             return t;
@@ -91,7 +91,7 @@ private:
         }
     }
 
-    exprP expectN() {
+    unique_ptr<Name> expectN() {
         const Token& t = peek();
         if (t.type == Token::Type::NAME) {
             next();
@@ -121,7 +121,7 @@ private:
 
     unique_ptr<Module> file();
     optional<stmtPs> statements();
-    stmtP statement();
+    optional<stmtPs> statement();
 
     stmtP compound_stmt();
     stmtP function_def();
@@ -163,13 +163,21 @@ private:
     exprP assignment_expression();
 
     exprP atom();
+    
+    exprP t_primary();
 
     exprP annotated_rhs();
     exprP single_target();
     exprP single_subscript_attribute_target();
     exprP yield_expr();
-    exprP augassign();
-
+    optional<operator_> augassign();
+    
+    exprP star_targets();
+    exprP star_target();
+    exprP target_with_star_atom();
+    exprPs star_targets_list_seq();
+    exprPs star_targets_tuple_seq();
+    exprP star_atom();
 
     exprP pratt_parser();
     exprP pratt_parser_bp(int minBP);
