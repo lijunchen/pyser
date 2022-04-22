@@ -6,7 +6,7 @@
 
 using std::vector;
 
-class Tokenizer{
+class Tokenizer {
 public:
     Tokenizer(): p(0) {}
     vector<Token> tokenize(const string& input);
@@ -23,11 +23,10 @@ public:
         p++;
         return peek();
     }
+
 public:
     vector<Token> tokens;
     int p;
 };
-
-
 
 #endif /* TOKENIZER_H */

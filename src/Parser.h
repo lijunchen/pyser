@@ -1,28 +1,27 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <vector>
-#include <string>
 #include <memory>
 #include <optional>
-#include <unordered_set>
+#include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
-
+#include <vector>
 
 #include "AST.h"
-#include "Tokenizer.h"
 #include "Token.h"
+#include "Tokenizer.h"
 
-using std::vector;
-using std::string;
-using std::unique_ptr;
 using std::make_unique;
 using std::nullopt;
 using std::optional;
-using std::unordered_set;
-using std::unordered_map;
+using std::string;
 using std::tuple;
+using std::unique_ptr;
+using std::unordered_map;
+using std::unordered_set;
+using std::vector;
 
 class Token;
 
@@ -30,7 +29,8 @@ void initBindingPowerTables();
 
 class BindingPower {
 public:
-    BindingPower(optional<int> left, optional<int> right) : left(left), right(right) {}
+    BindingPower(optional<int> left, optional<int> right)
+        : left(left), right(right) {}
 
 public:
     optional<int> left;
@@ -43,15 +43,12 @@ enum class Assoc { Non, Left, Right };
 string fixToString();
 string assocToString();
 
-
 void initBindingPowerTables();
 
 class Parser {
 public:
-    Parser() {
-        initBindingPowerTables();
-    }
-    
+    Parser() { initBindingPowerTables(); }
+
     unique_ptr<ast> parse(const string& input) {
         tokenizer.tokens = tokenizer.tokenize(input);
         return file();
@@ -68,10 +65,10 @@ public:
     }
 
 private:
-
     bool expect(Token::Type type) {
         const Token& t = peek();
-        // printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
+        // printf("expect %s, actually: %s\n",
+        // Token::typeToString(type).c_str(), t.toString().c_str());
         if (t.type == type) {
             next();
             return true;
@@ -82,7 +79,8 @@ private:
 
     Token expectT(Token::Type type) {
         const Token& t = peek();
-        // printf("expect %s, actually: %s\n", Token::typeToString(type).c_str(), t.toString().c_str());
+        // printf("expect %s, actually: %s\n",
+        // Token::typeToString(type).c_str(), t.toString().c_str());
         if (t.type == type) {
             next();
             return t;
@@ -133,7 +131,6 @@ private:
     stmtP while_stmt();
     stmtP match_stmt();
 
-
     optional<stmtPs> block();
 
     optional<stmtPs> simple_stmts();
@@ -151,7 +148,6 @@ private:
     stmtP global_stmt();
     stmtP nonlocal_stmt();
 
-
     exprP star_expressions();
     exprP star_expression();
     exprP expression();
@@ -163,7 +159,7 @@ private:
     exprP assignment_expression();
 
     exprP atom();
-    
+
     exprP t_primary();
 
     exprP annotated_rhs();
@@ -171,7 +167,7 @@ private:
     exprP single_subscript_attribute_target();
     exprP yield_expr();
     optional<operator_> augassign();
-    
+
     exprP star_targets();
     exprP star_target();
     exprP target_with_star_atom();
@@ -191,8 +187,10 @@ private:
     Token peek() { return tokenizer.peek(); }
     Token next() { return tokenizer.next(); }
     Tokenizer tokenizer;
+
 private:
     static unordered_set<string> keywords;
+
 public:
     // pratt related
     static unordered_map<Token, optional<BindingPower>> infixTable;
