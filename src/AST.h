@@ -459,7 +459,8 @@ public:
 
 class IfExp: public expr {
 public:
-    IfExp(exprP test, exprP body, exprP orelse): test(move(test)), body(move(body)), orelse(move(orelse)) {}
+    IfExp(exprP test, exprP body, exprP orelse)
+        : test(move(test)), body(move(body)), orelse(move(orelse)) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
@@ -576,7 +577,8 @@ public:
 
 class NamedExpr: public expr {
 public:
-    NamedExpr(exprP target, exprP value): target(move(target)), value(move(value)) {}
+    NamedExpr(exprP target, exprP value)
+        : target(move(target)), value(move(value)) {}
     virtual void accept(Visitor& visitor) { visitor.visit(*this); }
 
 public:

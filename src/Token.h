@@ -79,9 +79,9 @@ public:
     };
 
 public:
-    Token() : Token(Token::Type::ENDMARKER, "") {}
-    Token(Token::Type type) : type(type) {}
-    Token(Token::Type type, const string& raw) : type(type), raw(raw) {}
+    Token(): Token(Token::Type::ENDMARKER, "") {}
+    Token(Token::Type type): type(type) {}
+    Token(Token::Type type, const string& raw): type(type), raw(raw) {}
 
     Token::Type type;
     string raw;
@@ -91,29 +91,23 @@ public:
     bool operator==(const Token& other) const {
         if (type != other.type)
             return false;
-        if (type == Token::Type::NAME || type == Token::Type::NUMBER || type == Token::Type::STRING) {
+        if (type == Token::Type::NAME || type == Token::Type::NUMBER ||
+            type == Token::Type::STRING) {
             return raw == other.raw;
         }
         return true;
     }
 
     bool is_operator() const {
-        return type == Token::Type::PLUS ||
-               type == Token::Type::MINUS ||
-               type == Token::Type::STAR ||
-               type == Token::Type::AT ||
-               type == Token::Type::SLASH ||
-               type == Token::Type::PERCENT ||
+        return type == Token::Type::PLUS || type == Token::Type::MINUS ||
+               type == Token::Type::STAR || type == Token::Type::AT ||
+               type == Token::Type::SLASH || type == Token::Type::PERCENT ||
                type == Token::Type::DOUBLESTAR ||
                type == Token::Type::LEFTSHIFT ||
-               type == Token::Type::RIGHTSHIFT ||
-               type == Token::Type::VBAR ||
-               type == Token::Type::CIRCUMFLEX ||
-               type == Token::Type::AMPER ||
-               type == Token::Type::DOUBLESLASH ||
-               type == Token::Type::DOT ||
-               type == Token::Type::LPAR ||
-               type == Token::Type::LSQB;
+               type == Token::Type::RIGHTSHIFT || type == Token::Type::VBAR ||
+               type == Token::Type::CIRCUMFLEX || type == Token::Type::AMPER ||
+               type == Token::Type::DOUBLESLASH || type == Token::Type::DOT ||
+               type == Token::Type::LPAR || type == Token::Type::LSQB;
     }
 
     bool is_boolop() const {
@@ -121,20 +115,17 @@ public:
     }
 
     bool is_unaryop() const {
-        return type == Token::Type::PLUS ||
-               type == Token::Type::MINUS ||
-               type == Token::Type::TILDE ||
-               type == Token::Type::CIRCUMFLEX;
+        return type == Token::Type::PLUS || type == Token::Type::MINUS ||
+               type == Token::Type::TILDE || type == Token::Type::CIRCUMFLEX;
     }
 
     bool is_cmpop() const {
-        return type == Token::Type::EQEQUAL ||
-               type == Token::Type::NOTEQUAL ||
-               type == Token::Type::LESS ||
-               type == Token::Type::LESSEQUAL ||
+        return type == Token::Type::EQEQUAL || type == Token::Type::NOTEQUAL ||
+               type == Token::Type::LESS || type == Token::Type::LESSEQUAL ||
                type == Token::Type::GREATER ||
                type == Token::Type::GREATEREQUAL ||
-               type == Token::Type::NAME && (raw == "not" || raw == "is" || raw == "in");
+               type == Token::Type::NAME &&
+                   (raw == "not" || raw == "is" || raw == "in");
     }
 
     static string typeToString(Token::Type tt);
@@ -149,7 +140,8 @@ namespace std {
 
 template <> struct hash<Token> {
     std::size_t operator()(const Token& t) const {
-        if (t.type == Token::Type::NAME || t.type == Token::Type::NUMBER || t.type == Token::Type::STRING) {
+        if (t.type == Token::Type::NAME || t.type == Token::Type::NUMBER ||
+            t.type == Token::Type::STRING) {
             return hash<string>()(t.raw) ^ hash<Token::Type>()(t.type);
         }
         return hash<Token::Type>()(t.type);

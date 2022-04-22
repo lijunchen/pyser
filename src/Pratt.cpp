@@ -3,16 +3,16 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <utility>
 #include <unordered_map>
+#include <utility>
 
 using std::make_unique;
 using std::optional;
 using std::pair;
 using std::string;
+using std::tuple;
 using std::unique_ptr;
 using std::unordered_map;
-using std::tuple;
 
 string fixToString(Fix f) {
     switch (f) {
@@ -46,58 +46,66 @@ void Parser::initBindingPowerTables() {
     table = {
         // Precedence from low to high
 
-        { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "if") }},
-        { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "or") }},
-        { Fix::In, Assoc::Left, { Token(Token::Type::NAME, "and") }},
+        {Fix::In, Assoc::Left, {Token(Token::Type::NAME, "if")}},
+        {Fix::In, Assoc::Left, {Token(Token::Type::NAME, "or")}},
+        {Fix::In, Assoc::Left, {Token(Token::Type::NAME, "and")}},
 
-        { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "not") }},
+        {Fix::Pre, Assoc::Non, {Token(Token::Type::NAME, "not")}},
 
-        { Fix::In, Assoc::Left, {
-                    Token(Token::Type::EQEQUAL, "=="),
-                    Token(Token::Type::NOTEQUAL, "!="),
-                    Token(Token::Type::LESSEQUAL, "<="),
-                    Token(Token::Type::LESS, "<"),
-                    Token(Token::Type::GREATEREQUAL, ">="),
-                    Token(Token::Type::GREATER, ">"),
-                    Token(Token::Type::NAME, "not in"),
-                    Token(Token::Type::NAME, "in"),
-                    Token(Token::Type::NAME, "is not"),
-                    Token(Token::Type::NAME, "is"),
-                    } },
+        {Fix::In,
+         Assoc::Left,
+         {
+             Token(Token::Type::EQEQUAL, "=="),
+             Token(Token::Type::NOTEQUAL, "!="),
+             Token(Token::Type::LESSEQUAL, "<="),
+             Token(Token::Type::LESS, "<"),
+             Token(Token::Type::GREATEREQUAL, ">="),
+             Token(Token::Type::GREATER, ">"),
+             Token(Token::Type::NAME, "not in"),
+             Token(Token::Type::NAME, "in"),
+             Token(Token::Type::NAME, "is not"),
+             Token(Token::Type::NAME, "is"),
+         }},
 
-        { Fix::In, Assoc::Left, { Token(Token::Type::VBAR, "|") } },       // |
-        { Fix::In, Assoc::Left, { Token(Token::Type::CIRCUMFLEX, "^") } }, // ^
-        { Fix::In, Assoc::Left, { Token(Token::Type::AMPER, "&") } },      // &
+        {Fix::In, Assoc::Left, {Token(Token::Type::VBAR, "|")}},       // |
+        {Fix::In, Assoc::Left, {Token(Token::Type::CIRCUMFLEX, "^")}}, // ^
+        {Fix::In, Assoc::Left, {Token(Token::Type::AMPER, "&")}},      // &
 
-        { Fix::In, Assoc::Left, {
-                    Token(Token::Type::LEFTSHIFT, "<<"),
-                    Token(Token::Type::RIGHTSHIFT, ">>"),
-                    } },
+        {Fix::In,
+         Assoc::Left,
+         {
+             Token(Token::Type::LEFTSHIFT, "<<"),
+             Token(Token::Type::RIGHTSHIFT, ">>"),
+         }},
 
-        { Fix::In, Assoc::Left, {
-                    Token(Token::Type::PLUS, "+"),
-                    Token(Token::Type::MINUS, "-"),
-                    } },
+        {Fix::In,
+         Assoc::Left,
+         {
+             Token(Token::Type::PLUS, "+"),
+             Token(Token::Type::MINUS, "-"),
+         }},
 
-        { Fix::In, Assoc::Left, {
-                    Token(Token::Type::STAR, "*"),
-                    Token(Token::Type::SLASH, "/"),
-                    Token(Token::Type::DOUBLESLASH, "//"),
-                    Token(Token::Type::PERCENT, "%"),
-                    Token(Token::Type::AT, "@"),
-                    } },
+        {Fix::In,
+         Assoc::Left,
+         {
+             Token(Token::Type::STAR, "*"),
+             Token(Token::Type::SLASH, "/"),
+             Token(Token::Type::DOUBLESLASH, "//"),
+             Token(Token::Type::PERCENT, "%"),
+             Token(Token::Type::AT, "@"),
+         }},
 
-        { Fix::Pre, Assoc::Non, { Token(Token::Type::PLUS, "+") } },
-        { Fix::Pre, Assoc::Non, { Token(Token::Type::MINUS, "-") } },
-        { Fix::Pre, Assoc::Non, { Token(Token::Type::TILDE, "~") } },
+        {Fix::Pre, Assoc::Non, {Token(Token::Type::PLUS, "+")}},
+        {Fix::Pre, Assoc::Non, {Token(Token::Type::MINUS, "-")}},
+        {Fix::Pre, Assoc::Non, {Token(Token::Type::TILDE, "~")}},
 
-        { Fix::In, Assoc::Right, { Token(Token::Type::DOUBLESTAR, "**") } },
+        {Fix::In, Assoc::Right, {Token(Token::Type::DOUBLESTAR, "**")}},
 
-        { Fix::Pre, Assoc::Non, { Token(Token::Type::NAME, "await") }},
+        {Fix::Pre, Assoc::Non, {Token(Token::Type::NAME, "await")}},
 
-        { Fix::In, Assoc::Left, { Token(Token::Type::DOT, ".") } },
-        { Fix::In, Assoc::Left, { Token(Token::Type::LPAR, "(") } },
-        { Fix::In, Assoc::Left, { Token(Token::Type::LSQB, "[") } },
+        {Fix::In, Assoc::Left, {Token(Token::Type::DOT, ".")}},
+        {Fix::In, Assoc::Left, {Token(Token::Type::LPAR, "(")}},
+        {Fix::In, Assoc::Left, {Token(Token::Type::LSQB, "[")}},
     };
 
     for (int i = 0; i < table.size(); i++) {
@@ -156,7 +164,8 @@ exprP Parser::pratt_parser_bp(int minBP) {
         next();
         exprP rhs = pratt_parser_bp(*bp->right);
         if (tok.type == Token::Type::STAR) {
-            optional<BindingPower> bitwiseOrBP = infix_binding_power(Token(Token::Type::VBAR, "|"));
+            optional<BindingPower> bitwiseOrBP =
+                infix_binding_power(Token(Token::Type::VBAR, "|"));
             lhs = make_unique<Starred>(move(rhs), expr_context::Load);
         } else if (tok.type == Token::Type::PLUS) {
             lhs = make_unique<UnaryOp>(unaryop::UAdd, move(rhs));
@@ -187,7 +196,8 @@ exprP Parser::pratt_parser_bp(int minBP) {
             printf("bp of %s is nullopt\n", t.toString().c_str());
             break;
         }
-        printf("while next token: %s, bp: %d, %d\n", t.toString().c_str(), bp->left.value(), bp->right.value());
+        printf("while next token: %s, bp: %d, %d\n", t.toString().c_str(),
+               bp->left.value(), bp->right.value());
         if (*bp->left < minBP) {
             break;
         }
@@ -196,35 +206,47 @@ exprP Parser::pratt_parser_bp(int minBP) {
             operator_ op{};
             bool done = false;
             switch (t.type) {
-                case Token::Type::PLUS: op = operator_::Add; break;
-                case Token::Type::MINUS: op = operator_::Sub; break;
-                case Token::Type::STAR: op = operator_::Mult; break;
-                case Token::Type::SLASH: op = operator_::Div; break;
-                case Token::Type::DOUBLESTAR: op = operator_::Pow; break;
-                case Token::Type::DOT: {
-                    if (const Token& attr = expectT(Token::Type::NAME)) {
-                        lhs = make_unique<Attribute>(move(lhs), attr.raw, expr_context::Load);
+            case Token::Type::PLUS:
+                op = operator_::Add;
+                break;
+            case Token::Type::MINUS:
+                op = operator_::Sub;
+                break;
+            case Token::Type::STAR:
+                op = operator_::Mult;
+                break;
+            case Token::Type::SLASH:
+                op = operator_::Div;
+                break;
+            case Token::Type::DOUBLESTAR:
+                op = operator_::Pow;
+                break;
+            case Token::Type::DOT: {
+                if (const Token& attr = expectT(Token::Type::NAME)) {
+                    lhs = make_unique<Attribute>(move(lhs), attr.raw,
+                                                 expr_context::Load);
+                    done = true;
+                }
+            }
+            case Token::Type::LPAR: {
+                break;
+            }
+            case Token::Type::LSQB: {
+                exprP rhs = slices();
+                if (rhs) {
+                    lhs = make_unique<Subscript>(move(lhs), move(rhs),
+                                                 expr_context::Load);
+                    if (expect(Token::Type::RSQB)) {
                         done = true;
+                        break;
+                    } else {
+                        throw std::runtime_error("expect ]");
                     }
                 }
-                case Token::Type::LPAR: {
-                    break;
-                }
-                case Token::Type::LSQB: {
-                    exprP rhs = slices();
-                    if (rhs) {
-                        lhs = make_unique<Subscript>(move(lhs), move(rhs), expr_context::Load);
-                        if (expect(Token::Type::RSQB)) {
-                            done = true;
-                            break;
-                        } else {
-                            throw std::runtime_error("expect ]");
-                        }
-                    }
-                    break;
-                }
-                default:
-                    break;
+                break;
+            }
+            default:
+                break;
             }
             if (!done) {
                 exprP rhs = pratt_parser_bp(*bp->right);
@@ -254,34 +276,46 @@ exprP Parser::pratt_parser_bp(int minBP) {
             // { Eq, NotEq, Lt, LtE, Gt, GtE, Is, IsNot, In, NotIn};
             cmpop op{};
             switch (t.type) {
-                case Token::Type::EQUAL: op = cmpop::Eq; break;
-                case Token::Type::NOTEQUAL: op = cmpop::NotEq; break;
-                case Token::Type::LESS: op = cmpop::Lt; break;
-                case Token::Type::LESSEQUAL: op = cmpop::LtE; break;
-                case Token::Type::GREATER: op = cmpop::Gt; break;
-                case Token::Type::GREATEREQUAL: op = cmpop::GtE; break;
-                case Token::Type::NAME: {
-                    const Token& t2 = peek();
-                    if (t.raw == "not" && t2.raw == "in") {
-                        op = cmpop::NotIn;
-                        break;
-                    }
-                    if (t.raw == "in") {
-                        op = cmpop::In;
-                        break;
-                    }
-                    if (t.raw == "is") {
-                        if (t2.raw == "not") {
-                            next();
-                            op = cmpop::IsNot;
-                            break;
-                        }
-                        op = cmpop::Is;
-                        break;
-                    }
-                }
-                default:
+            case Token::Type::EQUAL:
+                op = cmpop::Eq;
+                break;
+            case Token::Type::NOTEQUAL:
+                op = cmpop::NotEq;
+                break;
+            case Token::Type::LESS:
+                op = cmpop::Lt;
+                break;
+            case Token::Type::LESSEQUAL:
+                op = cmpop::LtE;
+                break;
+            case Token::Type::GREATER:
+                op = cmpop::Gt;
+                break;
+            case Token::Type::GREATEREQUAL:
+                op = cmpop::GtE;
+                break;
+            case Token::Type::NAME: {
+                const Token& t2 = peek();
+                if (t.raw == "not" && t2.raw == "in") {
+                    op = cmpop::NotIn;
                     break;
+                }
+                if (t.raw == "in") {
+                    op = cmpop::In;
+                    break;
+                }
+                if (t.raw == "is") {
+                    if (t2.raw == "not") {
+                        next();
+                        op = cmpop::IsNot;
+                        break;
+                    }
+                    op = cmpop::Is;
+                    break;
+                }
+            }
+            default:
+                break;
             }
             exprP rhs = pratt_parser_bp(*bp->right);
             Compare* p = dynamic_cast<Compare*>(lhs.get());
@@ -305,7 +339,6 @@ exprP Parser::pratt_parser_bp(int minBP) {
         } else {
             break;
         }
-
     }
 
     if (lhs) {

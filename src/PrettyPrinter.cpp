@@ -1,74 +1,108 @@
-#include <cstdio>
-#include "AST.h"
 #include "PrettyPrinter.h"
+#include "AST.h"
+#include <cstdio>
 
 string PrettyPrinter::contextToString(expr_context ctx) {
     switch (ctx) {
-        case expr_context::Load:
-            return "Load()";
-        case expr_context::Store:
-            return "Store()";
-        case expr_context::Del:
-            return "Del()";
-        default:
-            break;
+    case expr_context::Load:
+        return "Load()";
+    case expr_context::Store:
+        return "Store()";
+    case expr_context::Del:
+        return "Del()";
+    default:
+        break;
     }
     return "InvalidContext";
 }
 
-// Add, Sub, Mult, MatMult, Div, Mod, Pow, LShift, RShift, BitOr, BitXor, BitAnd, FloorDiv 
+// Add, Sub, Mult, MatMult, Div, Mod, Pow, LShift, RShift, BitOr, BitXor,
+// BitAnd, FloorDiv
 string PrettyPrinter::operatorToString(operator_ op) {
     switch (op) {
-        case operator_::Add: return "Add()";
-        case operator_::Sub: return "Sub()";
-        case operator_::Mult: return "Mult()";
-        case operator_::MatMult: return "MatMult()";
-        case operator_::Div: return "Div()";
-        case operator_::Mod: return "Mod()";
-        case operator_::Pow: return "Pow()";
-        case operator_::LShift: return "LShift()";
-        case operator_::RShift: return "RShift()";
-        case operator_::BitOr: return "BitOr()";
-        case operator_::BitXor: return "BitXor()";
-        case operator_::BitAnd: return "BitAnd()";
-        case operator_::FloorDiv: return "FloorDiv()";
-        default: break;
+    case operator_::Add:
+        return "Add()";
+    case operator_::Sub:
+        return "Sub()";
+    case operator_::Mult:
+        return "Mult()";
+    case operator_::MatMult:
+        return "MatMult()";
+    case operator_::Div:
+        return "Div()";
+    case operator_::Mod:
+        return "Mod()";
+    case operator_::Pow:
+        return "Pow()";
+    case operator_::LShift:
+        return "LShift()";
+    case operator_::RShift:
+        return "RShift()";
+    case operator_::BitOr:
+        return "BitOr()";
+    case operator_::BitXor:
+        return "BitXor()";
+    case operator_::BitAnd:
+        return "BitAnd()";
+    case operator_::FloorDiv:
+        return "FloorDiv()";
+    default:
+        break;
     }
     return "InvalidOperator";
 }
 
 string PrettyPrinter::unaryopToString(unaryop op) {
     switch (op) {
-        case unaryop::Invert: return "Invert()";
-        case unaryop::Not: return "Not()";
-        case unaryop::UAdd: return "UAdd()";
-        case unaryop::USub: return "USub()";
-        default: break;
+    case unaryop::Invert:
+        return "Invert()";
+    case unaryop::Not:
+        return "Not()";
+    case unaryop::UAdd:
+        return "UAdd()";
+    case unaryop::USub:
+        return "USub()";
+    default:
+        break;
     }
     return "InvalidUnaryOperator";
 }
 
 string PrettyPrinter::boolopToString(boolop op) {
     switch (op) {
-        case boolop::And: return "And()";
-        case boolop::Or: return "Or()";
-        default: break;
+    case boolop::And:
+        return "And()";
+    case boolop::Or:
+        return "Or()";
+    default:
+        break;
     }
 }
 
 string PrettyPrinter::cmpopToString(cmpop op) {
     switch (op) {
-        case cmpop::Eq: return "Eq()";
-        case cmpop::NotEq: return "NotEq()";
-        case cmpop::Lt: return "Lt()";
-        case cmpop::LtE: return "LtE()";
-        case cmpop::Gt: return "Gt()";
-        case cmpop::GtE: return "GtE()";
-        case cmpop::Is: return "Is()";
-        case cmpop::IsNot: return "IsNot()";
-        case cmpop::In: return "In()";
-        case cmpop::NotIn: return "NotIn()";
-        default: break;
+    case cmpop::Eq:
+        return "Eq()";
+    case cmpop::NotEq:
+        return "NotEq()";
+    case cmpop::Lt:
+        return "Lt()";
+    case cmpop::LtE:
+        return "LtE()";
+    case cmpop::Gt:
+        return "Gt()";
+    case cmpop::GtE:
+        return "GtE()";
+    case cmpop::Is:
+        return "Is()";
+    case cmpop::IsNot:
+        return "IsNot()";
+    case cmpop::In:
+        return "In()";
+    case cmpop::NotIn:
+        return "NotIn()";
+    default:
+        break;
     }
 }
 
@@ -289,7 +323,7 @@ void PrettyPrinter::visit(None& node) {
 }
 
 void PrettyPrinter::visit(Name& node) {
-    ctx.s = "Name(id='" + node.id+ "', ctx=" + contextToString(node.ctx) + ")";
+    ctx.s = "Name(id='" + node.id + "', ctx=" + contextToString(node.ctx) + ")";
 }
 
 void PrettyPrinter::visit(Await& node) {
@@ -400,13 +434,22 @@ void PrettyPrinter::visit(Slice& node) {
     {
         ctx.level++;
         string lo = "None";
-        if (node.lower) { node.lower->accept(*this); lo = ctx.s; }
+        if (node.lower) {
+            node.lower->accept(*this);
+            lo = ctx.s;
+        }
         s += indent() + "lower=" + lo + ",\n";
         string hi = "None";
-        if (node.upper) { node.upper->accept(*this); hi = ctx.s; }
+        if (node.upper) {
+            node.upper->accept(*this);
+            hi = ctx.s;
+        }
         s += indent() + "upper=" + hi + ",\n";
         string st = "None";
-        if (node.step) { node.step->accept(*this); st = ctx.s;}
+        if (node.step) {
+            node.step->accept(*this);
+            st = ctx.s;
+        }
         s += indent() + "step=" + st + "\n";
         ctx.level--;
     }
@@ -439,7 +482,6 @@ void PrettyPrinter::visit(Assign& node) {
     }
     s += indent() + ")";
     ctx.s = s;
-
 }
 
 void PrettyPrinter::visit(AugAssign& node) {
@@ -512,7 +554,10 @@ void PrettyPrinter::visit(Yield& node) {
     {
         ctx.level++;
         string value = "None";
-        if (node.value) { node.value->accept(*this); value = ctx.s; }
+        if (node.value) {
+            node.value->accept(*this);
+            value = ctx.s;
+        }
         s += indent() + "value=" + value + "\n";
         ctx.level--;
     }
