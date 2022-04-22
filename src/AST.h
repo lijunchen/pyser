@@ -395,7 +395,7 @@ public:
 class Assert: public stmt {
 public:
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-
+    Assert(exprP test, exprP msg):test(move(test)), msg(move(msg)){}
 public:
     exprP test;
     exprP msg;

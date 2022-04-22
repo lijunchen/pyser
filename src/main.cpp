@@ -53,6 +53,8 @@ int main() {
     input = "*a | b\n";
     input = "a[b].c: int = 1\n";
     input = "a = b = c = d + e\na += b * d\n";
+    input = "assert 1 == 2, msg\n";
+    input = "assert True is False\n";
     // input = "a = b\n";
     Parser parser;
     unique_ptr<ast> t = nullptr;
