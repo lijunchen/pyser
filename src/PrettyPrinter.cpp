@@ -1,5 +1,5 @@
-#include "PrettyPrinter.h"
 #include "AST.h"
+#include "PrettyPrinter.h"
 #include <cstdio>
 
 string PrettyPrinter::contextToString(expr_context ctx) {
@@ -520,7 +520,23 @@ void PrettyPrinter::visit(For& node) {}
 void PrettyPrinter::visit(With& node) {}
 void PrettyPrinter::visit(Raise& node) {}
 void PrettyPrinter::visit(Try& node) {}
-void PrettyPrinter::visit(Assert& node) {}
+void PrettyPrinter::visit(Assert& node) {
+    auto s = indent() + "Assert(\n";
+    {
+        ctx.level++;
+        node.test->accept(*this);
+        s += indent() + "test=" + ctx.s + ",\n";
+        if (node.msg) {
+            node.msg->accept(*this);
+            s += indent() + "msg=" + ctx.s + ",\n";
+        } else {
+            s += indent() + "msg=None,\n,";
+        }
+        ctx.level--;
+    }
+    s += indent() + ")\n";
+    ctx.s = s;
+}
 void PrettyPrinter::visit(Import& node) {}
 void PrettyPrinter::visit(ImportFrom& node) {}
 void PrettyPrinter::visit(Global& node) {}

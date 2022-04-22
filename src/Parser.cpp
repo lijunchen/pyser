@@ -9,9 +9,8 @@ template <class Fn> struct defer {
 };
 template <class Fn> defer(Fn) -> defer<Fn>;
 
-unordered_set<string> Parser::keywords = {
-    "and", "or", "not", "is", "in", "yield", "from",
-};
+unordered_set<string> Parser::keywords = {"and", "or",    "not",  "is",
+                                          "in",  "yield", "from", "assert"};
 
 unique_ptr<Module> Parser::file() {
     int p = mark();
@@ -78,8 +77,8 @@ optional<stmtPs> Parser::statement() {
 
 /*
 block:
-    | NEWLINE INDENT statements DEDENT
-    | simple_stmts
+        | NEWLINE INDENT statements DEDENT
+        | simple_stmts
 */
 optional<stmtPs> Parser::block() {
     printf("block\n");
@@ -159,7 +158,7 @@ stmtP Parser::try_stmt() { return nullptr; }
 
 /*
 while_stmt:
-    | 'while' named_expression ':' block [else_block]
+        | 'while' named_expression ':' block [else_block]
 */
 stmtP Parser::while_stmt() {
     printf("while stmt\n");
@@ -184,8 +183,8 @@ stmtP Parser::while_stmt() {
 stmtP Parser::match_stmt() { return nullptr; }
 
 // simple_stmts:
-//     | simple_stmt !';' NEWLINE  # Not needed, there for speedup
-//     | ';'.simple_stmt+ [';'] NEWLINE
+//	   | simple_stmt !';' NEWLINE  # Not needed, there for speedup
+//	   | ';'.simple_stmt+ [';'] NEWLINE
 optional<stmtPs> Parser::simple_stmts() {
     printf("simple stmts\n");
     int p = mark();
@@ -273,19 +272,19 @@ stmtP Parser::simple_stmt() {
 }
 
 // assignment:
-//     | NAME ':' expression ['=' annotated_rhs ]
-//     | ('(' single_target ')'
-//          | single_subscript_attribute_target) ':' expression ['='
-//          annotated_rhs ]
-//     | (star_targets '=' )+ (yield_expr | star_expressions) !'='
-//     [TYPE_COMMENT] | single_target augassign ~ (yield_expr |
-//     star_expressions)
+//	   | NAME ':' expression ['=' annotated_rhs ]
+//	   | ('(' single_target ')'
+//			| single_subscript_attribute_target) ':' expression ['='
+//			annotated_rhs ]
+//	   | (star_targets '=' )+ (yield_expr | star_expressions) !'='
+//	   [TYPE_COMMENT] | single_target augassign ~ (yield_expr |
+//	   star_expressions)
 stmtP Parser::assignment() {
     printf("assignment\n");
     int p = mark();
     exprP lhs;
     // case 1:
-    //     NAME ':' expression ['=' annotated_rhs ]
+    //	   NAME ':' expression ['=' annotated_rhs ]
     printf("assignment case 1\n");
     if ((lhs = expression()) && expect(Token::Type::COLON)) {
         if (exprP anno = expression()) {
@@ -302,11 +301,11 @@ stmtP Parser::assignment() {
     reset(p);
 
     // case 2:
-    //     ('(' single_target ')' | single_subscript_attribute_target) ':'
-    //     expression ['=' annotated_rhs ]
-    //     =>
-    //     '(' single_target ')' ':' expression ['=' annotated_rhs ]
-    //     single_subscript_attribute_target ':' expression ['=' annotated_rhs ]
+    //	   ('(' single_target ')' | single_subscript_attribute_target) ':'
+    //	   expression ['=' annotated_rhs ]
+    //	   =>
+    //	   '(' single_target ')' ':' expression ['=' annotated_rhs ]
+    //	   single_subscript_attribute_target ':' expression ['=' annotated_rhs ]
     printf("assignment case 2\n");
     if (expect(Token::Type::LPAR) && (lhs = single_target()) &&
         expect(Token::Type::RPAR)) {
@@ -342,8 +341,8 @@ stmtP Parser::assignment() {
     }
 
     // case 3:
-    //     (star_targets '=' )+ (yield_expr | star_expressions) !'='
-    //     [TYPE_COMMENT]
+    //	   (star_targets '=' )+ (yield_expr | star_expressions) !'='
+    //	   [TYPE_COMMENT]
     printf("assignment case 3\n");
     reset(p);
     exprPs ts;
@@ -372,7 +371,7 @@ stmtP Parser::assignment() {
     }
 
     // case 4:
-    //     single_target augassign ~ (yield_expr | star_expressions)
+    //	   single_target augassign ~ (yield_expr | star_expressions)
     reset(p);
     printf("assignment case 4\n");
     if (exprP t = single_target()) {
@@ -407,9 +406,9 @@ exprP Parser::annotated_rhs() {
 }
 
 // single_target:
-//     | single_subscript_attribute_target
-//     | NAME
-//     | '(' single_target ')'
+//	   | single_subscript_attribute_target
+//	   | NAME
+//	   | '(' single_target ')'
 exprP Parser::single_target() {
     int p = mark();
     if (exprP e = single_subscript_attribute_target()) {
@@ -433,8 +432,8 @@ exprP Parser::single_target() {
 }
 
 // single_subscript_attribute_target:
-//     | t_primary '.' NAME !t_lookahead
-//     | t_primary '[' slices ']' !t_lookahead
+//	   | t_primary '.' NAME !t_lookahead
+//	   | t_primary '[' slices ']' !t_lookahead
 exprP Parser::single_subscript_attribute_target() {
     int p = mark();
     if (exprP t = t_primary()) {
@@ -461,8 +460,8 @@ exprP Parser::t_primary() {
 }
 
 // yield_expr:
-//     | 'yield' 'from' expression
-//     | 'yield' [star_expressions]
+//	   | 'yield' 'from' expression
+//	   | 'yield' [star_expressions]
 exprP Parser::yield_expr() {
     int p = mark();
     if (expect("yield") && expect("from")) {
@@ -480,19 +479,19 @@ exprP Parser::yield_expr() {
 }
 
 // augassign:
-//     | '+='
-//     | '-='
-//     | '*='
-//     | '@='
-//     | '/='
-//     | '%='
-//     | '&='
-//     | '|='
-//     | '^='
-//     | '<<='
-//     | '>>='
-//     | '**='
-//     | '//='
+//	   | '+='
+//	   | '-='
+//	   | '*='
+//	   | '@='
+//	   | '/='
+//	   | '%='
+//	   | '&='
+//	   | '|='
+//	   | '^='
+//	   | '<<='
+//	   | '>>='
+//	   | '**='
+//	   | '//='
 optional<operator_> Parser::augassign() {
     int p = mark();
     const Token& t = peek();
@@ -549,9 +548,9 @@ optional<operator_> Parser::augassign() {
 }
 
 // star_expressions:
-//     | star_expression (',' star_expression )+ [',']
-//     | star_expression ','
-//     | star_expression
+//	   | star_expression (',' star_expression )+ [',']
+//	   | star_expression ','
+//	   | star_expression
 exprP Parser::star_expressions() {
     int p = mark();
     exprPs elts;
@@ -574,8 +573,8 @@ exprP Parser::star_expressions() {
 }
 
 // star_expression:
-//     | '*' bitwise_or
-//     | expression
+//	   | '*' bitwise_or
+//	   | expression
 exprP Parser::star_expression() {
     int p = mark();
     if (expect(Token::Type::STAR)) {
@@ -687,7 +686,24 @@ stmtP Parser::yield_stmt() {
     return nullptr;
 }
 
-stmtP Parser::assert_stmt() { return nullptr; }
+stmtP Parser::assert_stmt() {
+    // assert_stmt: 'assert' expression [, expreesion]
+    auto p = mark();
+    if (expect("assert")) {
+        if (auto test = expression()) {
+            if (expectT(Token::Type::COMMA)) {
+                if (auto msg = expression()) {
+                    return make_unique<Assert>(move(test), move(msg));
+                }
+                reset(p);
+                return nullptr;
+            }
+            return make_unique<Assert>(move(test), nullptr);
+        }
+    }
+    reset(p);
+    return nullptr;
+}
 
 stmtP Parser::break_stmt() { return nullptr; }
 
@@ -781,8 +797,8 @@ exprP Parser::slice() {
 
 // # NOTE: star_targets may contain *bitwise_or, targets may not.
 // star_targets:
-//     | star_target !','
-//     | star_target (',' star_target )* [',']
+//	   | star_target !','
+//	   | star_target (',' star_target )* [',']
 
 exprP Parser::star_targets() {
     printf("star_targets\n");
@@ -809,8 +825,8 @@ exprP Parser::star_targets() {
 }
 
 // star_target:
-//     | '*' (!'*' star_target)
-//     | target_with_star_atom
+//	   | '*' (!'*' star_target)
+//	   | target_with_star_atom
 exprP Parser::star_target() {
     printf("star_target\n");
     int p = mark();
@@ -831,9 +847,9 @@ exprP Parser::star_target() {
 }
 
 // target_with_star_atom:
-//     | t_primary '.' NAME !t_lookahead
-//     | t_primary '[' slices ']' !t_lookahead
-//     | star_atom
+//	   | t_primary '.' NAME !t_lookahead
+//	   | t_primary '[' slices ']' !t_lookahead
+//	   | star_atom
 exprP Parser::target_with_star_atom() {
     printf("target_with_star_atom\n");
     int p = mark();
@@ -875,8 +891,8 @@ exprPs Parser::star_targets_list_seq() {
 }
 
 // star_targets_tuple_seq:
-//     | star_target (',' star_target )+ [',']
-//     | star_target ','
+//	   | star_target (',' star_target )+ [',']
+//	   | star_target ','
 exprPs Parser::star_targets_tuple_seq() {
     printf("star_targets_tuple_seq\n");
     int p = mark();
@@ -906,10 +922,10 @@ exprPs Parser::star_targets_tuple_seq() {
 }
 
 // star_atom:
-//     | NAME
-//     | '(' target_with_star_atom ')'
-//     | '(' [star_targets_tuple_seq] ')'
-//     | '[' [star_targets_list_seq] ']'
+//	   | NAME
+//	   | '(' target_with_star_atom ')'
+//	   | '(' [star_targets_tuple_seq] ')'
+//	   | '[' [star_targets_list_seq] ']'
 exprP Parser::star_atom() {
     printf("star_atom\n");
     int p = mark();
