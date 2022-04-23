@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include <memory>
+#include <iostream>
 
 using std::make_unique;
 
@@ -9,8 +10,8 @@ template <class Fn> struct defer {
 };
 template <class Fn> defer(Fn) -> defer<Fn>;
 
-unordered_set<string> Parser::keywords = {"and", "or",    "not",  "is",
-                                          "in",  "yield", "from", "assert"};
+unordered_set<string> Parser::keywords = {
+    "and", "or", "not", "is", "in", "yield", "assert", "import", "as", "from"};
 
 unique_ptr<Module> Parser::file() {
     int p = mark();
@@ -668,7 +669,219 @@ exprP Parser::assignment_expression() {
 
 stmtP Parser::return_stmt() { return nullptr; }
 
-stmtP Parser::import_stmt() { return nullptr; }
+stmtP Parser::import_stmt() {
+    auto p = mark();
+    if (auto alias = import_name()) {
+        return make_unique<Import>(move(*alias));
+    }
+    if (auto import_from_stmt = import_from()) {
+        return import_from_stmt;
+    }
+    reset(p);
+    return nullptr;
+}
+
+optional<std::vector<alias>> Parser::import_name() {
+    auto p = mark();
+    if (expect("import")) {
+        if (auto alias = dotted_as_names()) {
+            return alias;
+        }
+    }
+    reset(p);
+    return std::nullopt;
+}
+
+optional<string> Parser::dotted_name() {
+    // dotted_name := dotted_name . NAME | Name
+    // which is equavalent with
+    // dotted_name := NAME dotted_name_1
+    // dotted_name_1 := . NAME dotted_name_1 | ENDMARKER
+    auto p = mark();
+    string dot_name;
+    do {
+        if (auto name = expectN()) {
+            if (name->id == "import") {
+                // FIXME
+                reset(p);
+                return nullopt;
+            }
+            dot_name += name->id;
+            dot_name.push_back('.');
+        } else {
+            reset(p);
+            return nullopt;
+        }
+    } while (expect("."));
+    dot_name.pop_back();
+    return dot_name;
+}
+
+optional<vector<alias>> Parser::dotted_as_names() {
+    auto p = mark();
+    vector<alias> aliases;
+    auto dotted_as_name = [this]() -> optional<alias> {
+        // dotted_as_name := dotted_name ['as' NAME]
+        auto p = mark();
+        if (auto dn = dotted_name()) {
+            if (expect("as")) {
+                if (auto name = expectN()) {
+                    return alias(*dn, name->id);
+                }
+                reset(p);
+                return nullopt;
+            }
+            return alias(*dn, nullopt);
+        }
+        reset(p);
+        return nullopt;
+    };
+    do {
+        if (auto alias = dotted_as_name()) {
+            aliases.push_back(*alias);
+        } else {
+            reset(p);
+            return nullopt;
+        }
+    } while (expect(Token::Type::COMMA));
+    return aliases;
+}
+
+stmtP Parser::import_from() {
+    // import_from:
+    //     | 'from' ('.' | '...')* dotted_name 'import' import_from_targets
+    //     | 'from' ('.' | '...')+ 'import' import_from_targets
+    auto p = mark();
+    auto count_level = [this]() -> size_t {
+        auto dot_count = 0ull;
+        auto ellipsis_count = 0ull;
+        do {
+            if (expect(Token::Type::DOT)) {
+                dot_count++;
+            } else if (expect(Token::Type::ELLIPSIS)) {
+                ellipsis_count++;
+            } else {
+                break;
+            }
+        } while (true);
+        return dot_count + ellipsis_count * 3;
+    };
+    if (expect("from")) {
+        auto level = count_level();
+        if (level == 0) {
+            // ('.' | '...')*
+            if (auto module = dotted_name()) {
+                if (expect("import")) {
+                    if (auto alias = import_from_targets()) {
+                        return make_unique<ImportFrom>(module, move(*alias),
+                                                       level);
+                    }
+                    reset(p);
+                    return nullptr;
+                }
+                reset(p);
+                return nullptr;
+            }
+            reset(p);
+            return nullptr;
+        } else {
+            // ('.' | '...')+
+            if (auto module = dotted_name()) {
+                std::cout << "???????????????????" << *module << std::endl;
+                if (expect("import")) {
+                    if (auto alias = import_from_targets()) {
+                        return make_unique<ImportFrom>(module, move(*alias),
+                                                       level);
+                    }
+                    reset(p);
+                    return nullptr;
+                }
+                reset(p);
+                return nullptr;
+            }
+            if (expect("import")) {
+                if (auto alias = import_from_targets()) {
+                    return make_unique<ImportFrom>(nullopt, move(*alias),
+                                                   level);
+                }
+                reset(p);
+                return nullptr;
+            }
+            reset(p);
+            return nullptr;
+        }
+    }
+    reset(p);
+    return nullptr;
+}
+
+optional<vector<alias>> Parser::import_from_targets() {
+    // import_from_targets:
+    //     | '(' import_from_as_names [','] ')'
+    //     | import_from_as_names !','
+    //     | '*'
+    auto p = mark();
+    if (expect(Token::Type::LPAR)) {
+        if (auto from_as_names = import_from_as_names()) {
+            if (expect(Token::Type::COMMA)) {
+                if (expect(Token::Type::RPAR)) {
+                    return from_as_names;
+                }
+                reset(p);
+                return nullopt;
+            }
+            if (expect(Token::Type::RPAR)) {
+                return from_as_names;
+            }
+            reset(p);
+            return nullopt;
+        }
+        reset(p);
+        return nullopt;
+    }
+    if (auto from_as_names = import_from_as_names()) {
+        if (peek() == Token::Type::COMMA) {
+            reset(p);
+            return nullopt;
+        }
+        return from_as_names;
+    }
+    if (expect("*")) {
+        return vector<alias>{alias("*", nullopt)};
+    }
+    reset(p);
+    return nullopt;
+}
+
+optional<vector<alias>> Parser::import_from_as_names() {
+    auto import_from_as_name = [this]() -> optional<alias> {
+        // import_from_as_name:= NAME ['as' NAME]
+        auto p = mark();
+        if (auto n1 = expectN()) {
+            if (expect("as")) {
+                if (auto n2 = expectN()) {
+                    return alias(n1->id, n2->id);
+                }
+                reset(p);
+                return nullopt;
+            }
+            return alias(n1->id, nullopt);
+        }
+        reset(p);
+        return nullopt;
+    };
+    auto p = mark();
+    vector<alias> aliases;
+    do {
+        if (auto as_name = import_from_as_name()) {
+            aliases.push_back(*as_name);
+        } else {
+            reset(p);
+            return nullopt;
+        }
+    } while (expect(Token::Type::COMMA));
+    return aliases;
+}
 
 stmtP Parser::raise_stmt() { return nullptr; }
 

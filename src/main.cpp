@@ -55,6 +55,16 @@ int main() {
     input = "a = b = c = d + e\na += b * d\n";
     input = "assert 1 == 2, msg\n";
     input = "assert True is False\n";
+    input = "import a.b.c.d as e, p.pp.ppp.ppp as ppfpp, os, sys, dot\n"s +
+            "import foo as bar\n" + "import foo.bar as bb\n";
+    input = "from a.b.c import d\n";
+    input += "from ... import a as b\n"s;
+    input += "from a import b as c\n";
+    input += "from a.b import c as d\n";
+    input += "from ....a.b.c import d\n";
+    input += "from ... import a\n";
+    input += "from a import b\n";
+    input += "from a import *\n";
     // input = "a = b\n";
     Parser parser;
     unique_ptr<ast> t = nullptr;

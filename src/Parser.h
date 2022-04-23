@@ -137,7 +137,16 @@ private:
     stmtP simple_stmt();
     stmtP assignment();
     stmtP return_stmt();
+
     stmtP import_stmt();
+    optional<std::vector<alias>> import_name();
+    optional<std::vector<alias>> dotted_as_names();
+    optional<string> dotted_name();
+
+    stmtP import_from();
+    optional<vector<alias>> import_from_as_names();
+    optional<vector<alias>> import_from_targets();
+
     stmtP raise_stmt();
     stmtP pass_stmt();
     stmtP del_stmt();
