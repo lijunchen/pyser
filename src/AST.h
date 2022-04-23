@@ -395,7 +395,8 @@ public:
 class Assert: public stmt {
 public:
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    Assert(exprP test, exprP msg):test(move(test)), msg(move(msg)){}
+    Assert(exprP test, exprP msg): test(move(test)), msg(move(msg)) {}
+
 public:
     exprP test;
     exprP msg;
@@ -404,15 +405,22 @@ public:
 class Import: public stmt {
 public:
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
+    Import(std::vector<alias> alias): names(move(alias)) {}
 
 public:
+    std::vector<alias> names;
 };
 
 class ImportFrom: public stmt {
 public:
+    ImportFrom(optional<string> module, std::vector<alias> alias, int level)
+        : module(move(module)), alias(move(alias)), level(std::move(level)) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
+    optional<string> module;
+    std::vector<alias> alias;
+    int level;
 };
 
 class Global: public stmt {

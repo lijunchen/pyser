@@ -537,8 +537,45 @@ void PrettyPrinter::visit(Assert& node) {
     s += indent() + ")\n";
     ctx.s = s;
 }
-void PrettyPrinter::visit(Import& node) {}
-void PrettyPrinter::visit(ImportFrom& node) {}
+void PrettyPrinter::visit(Import& node) {
+    auto s = indent() + "Import(\n";
+    {
+        ctx.level++;
+        s += indent() + "names=[\n";
+        ctx.level++;
+        for (auto& n : node.names) {
+            n.accept(*this);
+            s += ctx.s + ",\n";
+        }
+        ctx.level--;
+        s += indent() + "],\n";
+        ctx.level--;
+    }
+    s += indent() + "),\n";
+    ctx.s = s;
+}
+void PrettyPrinter::visit(ImportFrom& node) {
+    auto s = indent() + "ImportFrom(\n";
+    {
+        ctx.level++;
+        {
+            s += indent() + "module=" +
+                 (node.module ? ("'" + *node.module + "'") : "None") + ",\n";
+            s += indent() + "names=[\n";
+            ctx.level++;
+            for (auto& n : node.alias) {
+                n.accept(*this);
+                s += ctx.s + ",\n";
+            }
+            ctx.level--;
+            s += indent() + "level=" + std::to_string(node.level) + ",\n";
+            s += indent() + "],\n";
+        }
+        ctx.level--;
+    }
+    s += indent() + "),\n";
+    ctx.s = s;
+}
 void PrettyPrinter::visit(Global& node) {}
 void PrettyPrinter::visit(Nonlocal& node) {}
 void PrettyPrinter::visit(Pass& node) {}
@@ -608,7 +645,23 @@ void PrettyPrinter::visit(Starred& node) {
 
 void PrettyPrinter::visit(arguments& node) {}
 void PrettyPrinter::visit(arg& node) {}
-void PrettyPrinter::visit(alias& node) {}
+void PrettyPrinter::visit(alias& node) {
+    auto s = indent() + "alias(\n";
+    {
+        ctx.level++;
+        s += indent() + "name='" + node.name + "',\n";
+        {
+            if (node.asname) {
+                s += indent() + "asname='" + *node.asname + "',\n";
+            } else {
+                s += indent() + "asname=None\n";
+            }
+        }
+        ctx.level--;
+        s += indent() + ")";
+    }
+    ctx.s = s;
+}
 void PrettyPrinter::visit(withitem& node) {}
 
 void PrettyPrinter::visit(NamedExpr& node) {}
