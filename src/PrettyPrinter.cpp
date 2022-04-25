@@ -1,6 +1,7 @@
 #include "AST.h"
 #include "PrettyPrinter.h"
 #include <cstdio>
+#include "PrettyPrinter.h"
 
 string PrettyPrinter::contextToString(expr_context ctx) {
     switch (ctx) {
@@ -132,7 +133,6 @@ void PrettyPrinter::visit(Module& node) {
     }
     s += indent() + ")";
     ctx.s = s;
-    printf("ast:\n%s\n", s.c_str());
 }
 
 void PrettyPrinter::visit(While& node) {

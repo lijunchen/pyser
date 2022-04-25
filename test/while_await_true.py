@@ -1,0 +1,2 @@
+while x:
+    await True
