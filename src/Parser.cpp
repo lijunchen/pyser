@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "Logger.h"
 #include <memory>
 #include <iostream>
 
@@ -20,7 +21,7 @@ unique_ptr<Module> Parser::file() {
         while (expect(Token::Type::NEWLINE))
             ;
         if (!expect(Token::Type::ENDMARKER)) {
-            printf("expect ENDMARKER, but got %s\n", peek().toString().c_str());
+            Logger::debug("expect ENDMARKER, but got %s\n", peek().toString().c_str());
             goto parse_error;
         }
         return std::make_unique<Module>(move(*stmts));
@@ -33,17 +34,17 @@ parse_error:
 
 // statements: statement+
 optional<stmtPs> Parser::statements() {
-    printf("statements\n");
+    Logger::debug("statements\n");
     int p = mark();
 
     stmtPs stmts;
     if (optional<stmtPs> xs = statement()) {
-        printf("!!!1match one statm\n");
+        Logger::debug("!!!1match one statm\n");
         for (size_t i = 0; i < xs->size(); i++) {
             stmts.push_back(move(xs->operator[](i)));
         }
 
-        printf("try nexst token: %s\n", peek().toString().c_str());
+        Logger::debug("try nexst token: %s\n", peek().toString().c_str());
         while (optional<stmtPs> xs = statement()) {
             for (size_t i = 0; i < xs->size(); i++) {
                 stmts.push_back(move(xs->operator[](i)));
@@ -58,7 +59,7 @@ optional<stmtPs> Parser::statements() {
 
 // statement: compound_stmt  | simple_stmts
 optional<stmtPs> Parser::statement() {
-    printf("statement\n");
+    Logger::debug("statement\n");
     int p = mark();
 
     if (stmtP s = compound_stmt()) {
@@ -82,13 +83,13 @@ block:
         | simple_stmts
 */
 optional<stmtPs> Parser::block() {
-    printf("block\n");
+    Logger::debug("block\n");
     int p = mark();
     optional<stmtPs> stmts;
 
     if (expect(Token::Type::NEWLINE)) {
         if (!expect(Token::Type::INDENT)) {
-            printf("expect indent after newline in block\n");
+            Logger::debug("expect indent after newline in block\n");
             reset(p);
             return nullopt;
         }
@@ -107,7 +108,7 @@ optional<stmtPs> Parser::block() {
 }
 
 stmtP Parser::compound_stmt() {
-    printf("compound stmt\n");
+    Logger::debug("compound stmt\n");
     int p = mark();
     stmtP stmt;
     if ((stmt = function_def())) {
@@ -148,7 +149,7 @@ stmtP Parser::compound_stmt() {
 stmtP Parser::function_def() { return nullptr; }
 
 stmtP Parser::if_stmt() {
-    printf("if stmt\n");
+    Logger::debug("if stmt\n");
     return nullptr;
 }
 
@@ -162,7 +163,7 @@ while_stmt:
         | 'while' named_expression ':' block [else_block]
 */
 stmtP Parser::while_stmt() {
-    printf("while stmt\n");
+    Logger::debug("while stmt\n");
     int p = mark();
     if (expect("while")) {
         exprP test = expression();
@@ -170,11 +171,11 @@ stmtP Parser::while_stmt() {
             optional<stmtPs> body = block();
             stmtPs orelse;
             if (body) {
-                printf("parse while succ\n");
+                Logger::debug("parse while succ\n");
                 return make_unique<While>(move(test), move(*body),
                                           move(orelse));
             }
-            printf("parse while fail\n");
+            Logger::debug("parse while fail\n");
         }
     }
     reset(p);
@@ -187,7 +188,7 @@ stmtP Parser::match_stmt() { return nullptr; }
 //	   | simple_stmt !';' NEWLINE  # Not needed, there for speedup
 //	   | ';'.simple_stmt+ [';'] NEWLINE
 optional<stmtPs> Parser::simple_stmts() {
-    printf("simple stmts\n");
+    Logger::debug("simple stmts\n");
     int p = mark();
 
     stmtPs stmts;
@@ -205,7 +206,7 @@ optional<stmtPs> Parser::simple_stmts() {
             reset(p);
             return nullopt;
         }
-        printf("simple stmts succ, next: %s\n", peek().toString().c_str());
+        Logger::debug("simple stmts succ, next: %s\n", peek().toString().c_str());
         return stmts;
     }
 
@@ -281,12 +282,12 @@ stmtP Parser::simple_stmt() {
 //	   [TYPE_COMMENT] | single_target augassign ~ (yield_expr |
 //	   star_expressions)
 stmtP Parser::assignment() {
-    printf("assignment\n");
+    Logger::debug("assignment\n");
     int p = mark();
     exprP lhs;
     // case 1:
-    //	   NAME ':' expression ['=' annotated_rhs ]
-    printf("assignment case 1\n");
+    //     NAME ':' expression ['=' annotated_rhs ]
+    Logger::debug("assignment case 1\n");
     if ((lhs = expression()) && expect(Token::Type::COLON)) {
         if (exprP anno = expression()) {
             int p2 = mark();
@@ -307,7 +308,7 @@ stmtP Parser::assignment() {
     //	   =>
     //	   '(' single_target ')' ':' expression ['=' annotated_rhs ]
     //	   single_subscript_attribute_target ':' expression ['=' annotated_rhs ]
-    printf("assignment case 2\n");
+    Logger::debug("assignment case 2\n");
     if (expect(Token::Type::LPAR) && (lhs = single_target()) &&
         expect(Token::Type::RPAR)) {
         if (expect(Token::Type::COLON)) {
@@ -342,9 +343,9 @@ stmtP Parser::assignment() {
     }
 
     // case 3:
-    //	   (star_targets '=' )+ (yield_expr | star_expressions) !'='
-    //	   [TYPE_COMMENT]
-    printf("assignment case 3\n");
+    //     (star_targets '=' )+ (yield_expr | star_expressions) !'='
+    //     [TYPE_COMMENT]
+    Logger::debug("assignment case 3\n");
     reset(p);
     exprPs ts;
     exprP t;
@@ -374,7 +375,7 @@ stmtP Parser::assignment() {
     // case 4:
     //	   single_target augassign ~ (yield_expr | star_expressions)
     reset(p);
-    printf("assignment case 4\n");
+    Logger::debug("assignment case 4\n");
     if (exprP t = single_target()) {
         if (optional<operator_> op = augassign()) {
             int p1 = mark();
@@ -890,7 +891,7 @@ stmtP Parser::pass_stmt() { return nullptr; }
 stmtP Parser::del_stmt() { return nullptr; }
 
 stmtP Parser::yield_stmt() {
-    printf("yield stmt\n");
+    Logger::debug("yield stmt\n");
     int p = mark();
     if (exprP e = yield_expr()) {
         return make_unique<Expr>(move(e));
@@ -932,7 +933,7 @@ exprP Parser::atom() {
     if (keywords.count(t.raw)) {
         return nullptr;
     }
-    printf("atom rule\n");
+    Logger::debug("atom rule\n");
     if (const Token& t = expectT(Token::Type::NAME)) {
         if (t.raw == "True") {
             return make_unique<Bool>("True");
@@ -944,7 +945,7 @@ exprP Parser::atom() {
             return make_unique<None>();
         }
 
-        printf("atom name: %s\n", t.raw.c_str());
+        Logger::debug("atom name: %s\n", t.raw.c_str());
         return make_unique<Name>(t.raw, expr_context::Load);
     }
     if (const Token& t = expectT(Token::Type::STRING)) {
@@ -1014,7 +1015,7 @@ exprP Parser::slice() {
 //	   | star_target (',' star_target )* [',']
 
 exprP Parser::star_targets() {
-    printf("star_targets\n");
+    Logger::debug("star_targets\n");
     int p = mark();
     if (exprP t = star_target()) {
         if (!lookahead(Token::Type::COMMA)) {
@@ -1041,7 +1042,7 @@ exprP Parser::star_targets() {
 //	   | '*' (!'*' star_target)
 //	   | target_with_star_atom
 exprP Parser::star_target() {
-    printf("star_target\n");
+    Logger::debug("star_target\n");
     int p = mark();
     if (expect(Token::Type::STAR) && !lookahead(Token::Type::STAR)) {
         exprP e = star_target();
@@ -1064,7 +1065,7 @@ exprP Parser::star_target() {
 //	   | t_primary '[' slices ']' !t_lookahead
 //	   | star_atom
 exprP Parser::target_with_star_atom() {
-    printf("target_with_star_atom\n");
+    Logger::debug("target_with_star_atom\n");
     int p = mark();
     if (exprP t = t_primary()) {
         expr* target = t.get();
@@ -1084,7 +1085,7 @@ exprP Parser::target_with_star_atom() {
 
 // star_targets_list_seq: ','.star_target+ [',']
 exprPs Parser::star_targets_list_seq() {
-    printf("star_targets_list_seq\n");
+    Logger::debug("star_targets_list_seq\n");
     int p = mark();
     exprP t;
     exprPs ts;
@@ -1107,7 +1108,7 @@ exprPs Parser::star_targets_list_seq() {
 //	   | star_target (',' star_target )+ [',']
 //	   | star_target ','
 exprPs Parser::star_targets_tuple_seq() {
-    printf("star_targets_tuple_seq\n");
+    Logger::debug("star_targets_tuple_seq\n");
     int p = mark();
     exprPs xs;
     exprP x;
@@ -1140,7 +1141,7 @@ exprPs Parser::star_targets_tuple_seq() {
 //	   | '(' [star_targets_tuple_seq] ')'
 //	   | '[' [star_targets_list_seq] ']'
 exprP Parser::star_atom() {
-    printf("star_atom\n");
+    Logger::debug("star_atom\n");
     int p = mark();
 
     if (unique_ptr<Name> name = expectN()) {

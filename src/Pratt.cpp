@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "Token.h"
+#include "Logger.h"
 #include <memory>
 #include <optional>
 #include <string>
@@ -42,7 +43,7 @@ unordered_map<Token, optional<BindingPower>> Parser::postfixTable;
 vector<tuple<Fix, Assoc, vector<Token>>> Parser::table;
 
 void Parser::initBindingPowerTables() {
-    printf("initBindingPowerTables\n");
+    Logger::debug("initBindingPowerTables\n");
     table = {
         // Precedence from low to high
 
@@ -193,10 +194,10 @@ exprP Parser::pratt_parser_bp(int minBP) {
         const Token& t = peek();
         optional<BindingPower> bp = infix_binding_power(t);
         if (!bp) {
-            printf("bp of %s is nullopt\n", t.toString().c_str());
+            Logger::debug("bp of %s is nullopt\n", t.toString().c_str());
             break;
         }
-        printf("while next token: %s, bp: %d, %d\n", t.toString().c_str(),
+        Logger::debug("while next token: %s, bp: %d, %d\n", t.toString().c_str(),
                bp->left.value(), bp->right.value());
         if (*bp->left < minBP) {
             break;
