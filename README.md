@@ -19,7 +19,7 @@ TODO:
 - Node generator
 - Parser generator
 - Port LLVM tutorial
-- Port some courses, such as [UCB CS294-113: Virtual Machines and Managed Runtimes](http://www.wolczko.com/CS294/), [CS 6120: Advanced Compilers](https://www.cs.cornell.edu/courses/cs6120/2022sp/)
+- Port some courses, such as [UCB CS294-113: Virtual Machines and Managed Runtimes](http://www.wolczko.com/CS294/), [Cornell CS 6120: Advanced Compilers](https://www.cs.cornell.edu/courses/cs6120/2022sp/)
 - Python VM
 - Explore other object models
 
