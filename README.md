@@ -12,6 +12,15 @@ This project demostrate how to
 - use visitor pattern
 - ...
 
+Test idea: the output of `source -> pyser -> ast in text -> eval -> ast -> astpretty.pprint` shouble be equal to `source -> ast.parse -> ast -> astpretty.pprint`
+
+
+TODO:
+- Node generator
+- Parser generator
+- Port LLVM tutorial
+- Python VM
+
 Note, even though I claim it is zero dependencies, I decided to use [re2c](https://github.com/skvadrik/re2c) to ramp up tokenizer.
 
 References and Resources:
