@@ -1,5 +1,4 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#pragma once
 
 #include <functional>
 #include <string>
@@ -149,5 +148,3 @@ template <> struct hash<Token> {
 };
 
 } // namespace std
-
-#endif /* TOKEN_H */

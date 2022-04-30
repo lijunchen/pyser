@@ -1,6 +1,4 @@
-#ifndef PARSER_H
-#define PARSER_H
-
+#pragma once
 #include <memory>
 #include <optional>
 #include <string>
@@ -14,7 +12,6 @@
 #include "Tokenizer.h"
 
 using std::make_unique;
-using std::nullopt;
 using std::optional;
 using std::string;
 using std::tuple;
@@ -212,5 +209,3 @@ public:
 
     void initBindingPowerTables();
 };
-
-#endif /* PARSER_H */

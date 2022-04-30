@@ -1,7 +1,6 @@
 #include "AST.h"
 #include "PrettyPrinter.h"
 #include <cstdio>
-#include "PrettyPrinter.h"
 
 string PrettyPrinter::contextToString(expr_context ctx) {
     switch (ctx) {

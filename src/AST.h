@@ -1,5 +1,4 @@
-#ifndef AST_H
-#define AST_H
+#pragma once
 
 #include "Visitor.h"
 #include <memory>
@@ -197,7 +196,9 @@ class Name: public expr {
 public:
     Name(const string& id, const expr_context& ctx): id(id), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    virtual void set_expr_context(expr_context ctx) override { this->ctx = ctx; }
+    virtual void set_expr_context(expr_context ctx) override {
+        this->ctx = ctx;
+    }
 
 public:
     string id;
@@ -218,7 +219,9 @@ public:
     Attribute(exprP value, const string& attr, expr_context ctx)
         : value(move(value)), attr(attr), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    virtual void set_expr_context(expr_context ctx) override { this->ctx = ctx; }
+    virtual void set_expr_context(expr_context ctx) override {
+        this->ctx = ctx;
+    }
 
 public:
     exprP value;
@@ -231,7 +234,9 @@ public:
     Subscript(exprP value, exprP slice, expr_context ctx)
         : value(move(value)), slice(move(slice)), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    virtual void set_expr_context(expr_context ctx) override { this->ctx = ctx; }
+    virtual void set_expr_context(expr_context ctx) override {
+        this->ctx = ctx;
+    }
 
 public:
     exprP value;
@@ -255,7 +260,9 @@ class List: public expr {
 public:
     List(exprPs elts, expr_context ctx): elts(move(elts)), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    virtual void set_expr_context(expr_context ctx) override { this->ctx = ctx; }
+    virtual void set_expr_context(expr_context ctx) override {
+        this->ctx = ctx;
+    }
 
 public:
     exprPs elts;
@@ -266,7 +273,9 @@ class Tuple: public expr {
 public:
     Tuple(exprPs elts, expr_context ctx): elts(move(elts)), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    virtual void set_expr_context(expr_context ctx) override { this->ctx = ctx; }
+    virtual void set_expr_context(expr_context ctx) override {
+        this->ctx = ctx;
+    }
 
 public:
     exprPs elts;
@@ -519,7 +528,9 @@ class Starred: public expr {
 public:
     Starred(exprP value, expr_context ctx): value(move(value)), ctx(ctx) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    virtual void set_expr_context(expr_context ctx) override { this->ctx = ctx; }
+    virtual void set_expr_context(expr_context ctx) override {
+        this->ctx = ctx;
+    }
 
 public:
     exprP value;
@@ -600,5 +611,3 @@ public:
     exprP target;
     exprP value;
 };
-
-#endif /* AST_H */

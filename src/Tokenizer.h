@@ -1,5 +1,4 @@
-#ifndef TOKENIZER_H
-#define TOKENIZER_H
+#pragma once
 
 #include "Token.h"
 #include <vector>
@@ -29,4 +28,3 @@ public:
     int p;
 };
 
-#endif /* TOKENIZER_H */

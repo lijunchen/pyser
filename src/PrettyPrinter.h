@@ -1,10 +1,13 @@
-#ifndef PRETTYPRINTER_H
-#define PRETTYPRINTER_H
+#pragma once
+
 #include "Visitor.h"
+#include "AST.h"
 #include <exception>
 #include <stdexcept>
+#include <string>
 
 using std::runtime_error;
+using std::string;
 
 struct PPContext {
     int level = 0;
@@ -155,5 +158,3 @@ public:
         throw runtime_error("not imp yet");
     };
 };
-
-#endif /* PRETTYPRINTER_H */

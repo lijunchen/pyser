@@ -1,5 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 #include <cstdarg>
 #include <cstdio>
 
@@ -33,5 +32,3 @@ public:
 public:
     static LogLevel level;
 };
-
-#endif /* UTIL_H */

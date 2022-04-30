@@ -4,6 +4,7 @@
 #include <iostream>
 
 using std::make_unique;
+using std::nullopt;
 
 template <class Fn> struct defer {
     Fn fn;
@@ -11,8 +12,9 @@ template <class Fn> struct defer {
 };
 template <class Fn> defer(Fn) -> defer<Fn>;
 
-unordered_set<string> Parser::keywords = {
-    "and", "or", "not", "is", "in", "yield", "assert", "import", "as", "from", "pass"};
+unordered_set<string> Parser::keywords = {"and", "or",    "not",    "is",
+                                          "in",  "yield", "assert", "import",
+                                          "as",  "from",  "pass"};
 
 unique_ptr<Module> Parser::file() {
     int p = mark();
@@ -21,7 +23,8 @@ unique_ptr<Module> Parser::file() {
         while (expect(Token::Type::NEWLINE))
             ;
         if (!expect(Token::Type::ENDMARKER)) {
-            Logger::debug("expect ENDMARKER, but got %s\n", peek().toString().c_str());
+            Logger::debug("expect ENDMARKER, but got %s\n",
+                          peek().toString().c_str());
             goto parse_error;
         }
         return std::make_unique<Module>(move(*stmts));
@@ -211,8 +214,10 @@ optional<stmtPs> Parser::simple_stmts() {
             reset(p);
             return nullopt;
         }
-        while (expect(Token::Type::NEWLINE));
-        Logger::debug("simple stmts succ, next: %s\n", peek().toString().c_str());
+        while (expect(Token::Type::NEWLINE))
+            ;
+        Logger::debug("simple stmts succ, next: %s\n",
+                      peek().toString().c_str());
         return stmts;
     }
 

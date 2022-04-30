@@ -1,22 +1,23 @@
-#include "AST.h"
 #include "Parser.h"
 #include "PrettyPrinter.h"
+#include "Logger.h"
+
 #include <cmath>
 #include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <memory>
 #include <string>
-#include "Logger.h"
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
-    string input = string { std::istreambuf_iterator<char>{ std::cin }, std::istreambuf_iterator<char>{} };
+    string input = string{std::istreambuf_iterator<char>{std::cin},
+                          std::istreambuf_iterator<char>{}};
     Parser parser;
 
     // Logger::level = LogLevel::DEBUG;
-    
+
     unique_ptr<ast> t = nullptr;
     try {
         t = parser.parse(input);
