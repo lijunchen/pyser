@@ -1,5 +1,4 @@
-#ifndef VISITOR_H
-#define VISITOR_H
+#pragma once
 
 class Module;
 class Interactive;
@@ -161,5 +160,3 @@ public:
     virtual void visit(MatchOr&) = 0;
     virtual void visit(type_ignore&) = 0;
 };
-
-#endif /* VISITOR_H */

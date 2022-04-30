@@ -9,10 +9,9 @@
 
 using std::make_unique;
 using std::optional;
-using std::pair;
+using std::nullopt;
 using std::string;
 using std::tuple;
-using std::unique_ptr;
 using std::unordered_map;
 
 string fixToString(Fix f) {
