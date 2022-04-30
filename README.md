@@ -14,6 +14,10 @@ This project demostrate how to
 
 Test idea: the output of `source -> pyser -> ast in text -> eval -> ast -> astpretty.pprint` shouble be equal to `source -> ast.parse -> ast -> astpretty.pprint`
 
+```
+mkdir build && cd build && cmake .. && make -j4 && cd .. && python3.10 test.py
+```
+
 
 TODO:
 - Node generator

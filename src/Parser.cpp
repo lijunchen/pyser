@@ -12,7 +12,7 @@ template <class Fn> struct defer {
 template <class Fn> defer(Fn) -> defer<Fn>;
 
 unordered_set<string> Parser::keywords = {
-    "and", "or", "not", "is", "in", "yield", "assert", "import", "as", "from"};
+    "and", "or", "not", "is", "in", "yield", "assert", "import", "as", "from", "pass"};
 
 unique_ptr<Module> Parser::file() {
     int p = mark();
@@ -39,12 +39,10 @@ optional<stmtPs> Parser::statements() {
 
     stmtPs stmts;
     if (optional<stmtPs> xs = statement()) {
-        Logger::debug("!!!1match one statm\n");
         for (size_t i = 0; i < xs->size(); i++) {
             stmts.push_back(move(xs->operator[](i)));
         }
 
-        Logger::debug("try nexst token: %s\n", peek().toString().c_str());
         while (optional<stmtPs> xs = statement()) {
             for (size_t i = 0; i < xs->size(); i++) {
                 stmts.push_back(move(xs->operator[](i)));
@@ -94,7 +92,14 @@ optional<stmtPs> Parser::block() {
             return nullopt;
         }
         stmts = statements();
-        expect(Token::Type::DEDENT);
+        if (!stmts) {
+            reset(p);
+            return nullopt;
+        }
+        if (!expect(Token::Type::DEDENT)) {
+            reset(p);
+            return nullopt;
+        }
         return stmts;
     }
 
@@ -166,7 +171,7 @@ stmtP Parser::while_stmt() {
     Logger::debug("while stmt\n");
     int p = mark();
     if (expect("while")) {
-        exprP test = expression();
+        exprP test = named_expression();
         if (expect(Token::Type::COLON)) {
             optional<stmtPs> body = block();
             stmtPs orelse;
@@ -206,6 +211,7 @@ optional<stmtPs> Parser::simple_stmts() {
             reset(p);
             return nullopt;
         }
+        while (expect(Token::Type::NEWLINE));
         Logger::debug("simple stmts succ, next: %s\n", peek().toString().c_str());
         return stmts;
     }
@@ -288,16 +294,18 @@ stmtP Parser::assignment() {
     // case 1:
     //     NAME ':' expression ['=' annotated_rhs ]
     Logger::debug("assignment case 1\n");
-    if ((lhs = expression()) && expect(Token::Type::COLON)) {
+    unique_ptr<Name> name;
+    if ((name = expectN()) && expect(Token::Type::COLON)) {
+        name->set_expr_context(expr_context::Store);
         if (exprP anno = expression()) {
             int p2 = mark();
             exprP value;
             if (expect(Token::Type::EQUAL) && (value = annotated_rhs())) {
-                return make_unique<AnnAssign>(move(lhs), move(anno),
-                                              move(value), 0);
+                return make_unique<AnnAssign>(move(name), move(anno),
+                                              move(value), 1);
             }
             reset(p2);
-            return make_unique<AnnAssign>(move(lhs), nullptr, move(value), 0);
+            return make_unique<AnnAssign>(move(name), nullptr, move(value), 1);
         }
     }
     reset(p);
@@ -311,6 +319,7 @@ stmtP Parser::assignment() {
     Logger::debug("assignment case 2\n");
     if (expect(Token::Type::LPAR) && (lhs = single_target()) &&
         expect(Token::Type::RPAR)) {
+        lhs->set_expr_context(expr_context::Store);
         if (expect(Token::Type::COLON)) {
             if (exprP anno = expression()) {
                 int p2 = mark();
@@ -327,6 +336,7 @@ stmtP Parser::assignment() {
     }
     reset(p);
     if ((lhs = single_subscript_attribute_target())) {
+        lhs->set_expr_context(expr_context::Store);
         if (expect(Token::Type::COLON)) {
             if (exprP anno = expression()) {
                 int p2 = mark();
@@ -350,10 +360,12 @@ stmtP Parser::assignment() {
     exprPs ts;
     exprP t;
     if ((t = star_targets()) && expect(Token::Type::EQUAL)) {
+        t->set_expr_context(expr_context::Store);
         ts.push_back(move(t));
         int p2 = mark();
         while ((p2 = mark()) && (t = star_targets()) &&
                expect(Token::Type::EQUAL)) {
+            t->set_expr_context(expr_context::Store);
             ts.push_back(move(t));
         }
         reset(p2);
@@ -377,6 +389,7 @@ stmtP Parser::assignment() {
     reset(p);
     Logger::debug("assignment case 4\n");
     if (exprP t = single_target()) {
+        t->set_expr_context(expr_context::Store);
         if (optional<operator_> op = augassign()) {
             int p1 = mark();
             if (exprP rhs = yield_expr()) {
@@ -788,7 +801,6 @@ stmtP Parser::import_from() {
         } else {
             // ('.' | '...')+
             if (auto module = dotted_name()) {
-                std::cout << "???????????????????" << *module << std::endl;
                 if (expect("import")) {
                     if (auto alias = import_from_targets()) {
                         return make_unique<ImportFrom>(module, move(*alias),
@@ -886,7 +898,13 @@ optional<vector<alias>> Parser::import_from_as_names() {
 
 stmtP Parser::raise_stmt() { return nullptr; }
 
-stmtP Parser::pass_stmt() { return nullptr; }
+stmtP Parser::pass_stmt() {
+    int p = mark();
+    if (expect("pass")) {
+        return make_unique<Pass>();
+    }
+    return nullptr;
+}
 
 stmtP Parser::del_stmt() { return nullptr; }
 
