@@ -116,7 +116,7 @@ void PrettyPrinter::visit(Module& node) {
             ctx.level++;
             for (size_t i = 0; i < node.body.size(); i++) {
                 node.body[i]->accept(*this);
-                s += ctx.s;
+                s += indent() + ctx.s;
                 s += ",\n";
             }
             ctx.level--;
@@ -136,7 +136,7 @@ void PrettyPrinter::visit(Module& node) {
 }
 
 void PrettyPrinter::visit(While& node) {
-    string s = indent() + "While(\n";
+    string s = "While(\n";
     {
         ctx.level++;
         node.test->accept(*this);
@@ -146,12 +146,12 @@ void PrettyPrinter::visit(While& node) {
             ctx.level++;
             for (size_t i = 0; i < node.body.size(); i++) {
                 node.body[i]->accept(*this);
-                s += ctx.s;
+                s += indent() + ctx.s;
                 s += ",\n";
             }
             ctx.level--;
         }
-        s += indent() + "]\n";
+        s += indent() + "],\n";
 
         s += indent() + "orelse=[\n";
         {
@@ -171,7 +171,7 @@ void PrettyPrinter::visit(While& node) {
 }
 
 void PrettyPrinter::visit(If& node) {
-    string s = indent() + "If(\n";
+    string s = "If(\n";
     {
         ctx.level++;
         node.test->accept(*this);
@@ -181,7 +181,7 @@ void PrettyPrinter::visit(If& node) {
             ctx.level++;
             for (size_t i = 0; i < node.body.size(); i++) {
                 node.body[i]->accept(*this);
-                s += ctx.s;
+                s += indent() + ctx.s;
                 s += ",\n";
             }
             ctx.level--;
@@ -206,7 +206,7 @@ void PrettyPrinter::visit(If& node) {
 }
 
 void PrettyPrinter::visit(Expr& node) {
-    string s = indent() + "Expr(\n";
+    string s = "Expr(\n";
     {
         ctx.level++;
         s += indent() + "value=";
@@ -345,7 +345,7 @@ void PrettyPrinter::visit(Attribute& node) {
         node.value->accept(*this);
         s += indent() + "value=" + ctx.s + ",\n";
         s += indent() + "attr='" + node.attr + "',\n";
-        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + ",\n";
         ctx.level--;
     }
     s += indent() + ")";
@@ -359,8 +359,8 @@ void PrettyPrinter::visit(Subscript& node) {
         node.value->accept(*this);
         s += indent() + "value=" + ctx.s + ",\n";
         node.slice->accept(*this);
-        s += indent() + "slice=" + ctx.s + "\n";
-        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        s += indent() + "slice=" + ctx.s + ",\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + ",\n";
         ctx.level--;
     }
     s += indent() + ")";
@@ -421,8 +421,8 @@ void PrettyPrinter::visit(Tuple& node) {
             }
             ctx.level--;
         }
-        s += indent() + "]\n";
-        s += indent() + "ctx=" + contextToString(node.ctx) + "\n";
+        s += indent() + "],\n";
+        s += indent() + "ctx=" + contextToString(node.ctx) + ",\n";
         ctx.level--;
     }
     s += indent() + ")";
@@ -463,7 +463,7 @@ void PrettyPrinter::visit(Return& node) {}
 void PrettyPrinter::visit(Delete& node) {}
 
 void PrettyPrinter::visit(Assign& node) {
-    string s = indent() + "Assign(\n";
+    string s = "Assign(\n";
     {
         ctx.level++;
         s += indent() + "targets=[\n";
@@ -485,7 +485,7 @@ void PrettyPrinter::visit(Assign& node) {
 }
 
 void PrettyPrinter::visit(AugAssign& node) {
-    string s = indent() + "AugAssign(\n";
+    string s = "AugAssign(\n";
     {
         ctx.level++;
         node.target->accept(*this);
@@ -500,7 +500,7 @@ void PrettyPrinter::visit(AugAssign& node) {
 }
 
 void PrettyPrinter::visit(AnnAssign& node) {
-    string s = indent() + "AnnAssign(\n";
+    string s = "AnnAssign(\n";
     {
         ctx.level++;
         node.target->accept(*this);
@@ -508,7 +508,7 @@ void PrettyPrinter::visit(AnnAssign& node) {
         node.annotation->accept(*this);
         s += indent() + "annotation=" + ctx.s + ",\n";
         node.value->accept(*this);
-        s += indent() + "value=" + ctx.s + "\n";
+        s += indent() + "value=" + ctx.s + ",\n";
         s += indent() + "simple=" + std::to_string(node.simple) + ",\n";
         ctx.level--;
     }
@@ -521,7 +521,7 @@ void PrettyPrinter::visit(With& node) {}
 void PrettyPrinter::visit(Raise& node) {}
 void PrettyPrinter::visit(Try& node) {}
 void PrettyPrinter::visit(Assert& node) {
-    auto s = indent() + "Assert(\n";
+    string s = "Assert(\n";
     {
         ctx.level++;
         node.test->accept(*this);
@@ -530,32 +530,32 @@ void PrettyPrinter::visit(Assert& node) {
             node.msg->accept(*this);
             s += indent() + "msg=" + ctx.s + ",\n";
         } else {
-            s += indent() + "msg=None,\n,";
+            s += indent() + "msg=None,\n";
         }
         ctx.level--;
     }
-    s += indent() + ")\n";
+    s += indent() + ")";
     ctx.s = s;
 }
 void PrettyPrinter::visit(Import& node) {
-    auto s = indent() + "Import(\n";
+    string s = "Import(\n";
     {
         ctx.level++;
         s += indent() + "names=[\n";
         ctx.level++;
         for (auto& n : node.names) {
             n.accept(*this);
-            s += ctx.s + ",\n";
+            s += indent() + ctx.s + ",\n";
         }
         ctx.level--;
         s += indent() + "],\n";
         ctx.level--;
     }
-    s += indent() + "),\n";
+    s += indent() + ")";
     ctx.s = s;
 }
 void PrettyPrinter::visit(ImportFrom& node) {
-    auto s = indent() + "ImportFrom(\n";
+    string s = "ImportFrom(\n";
     {
         ctx.level++;
         {
@@ -565,20 +565,24 @@ void PrettyPrinter::visit(ImportFrom& node) {
             ctx.level++;
             for (auto& n : node.alias) {
                 n.accept(*this);
-                s += ctx.s + ",\n";
+                s += indent() + ctx.s + ",\n";
             }
             ctx.level--;
-            s += indent() + "level=" + std::to_string(node.level) + ",\n";
             s += indent() + "],\n";
+            s += indent() + "level=" + std::to_string(node.level) + ",\n";
         }
         ctx.level--;
     }
-    s += indent() + "),\n";
+    s += indent() + ")";
     ctx.s = s;
 }
 void PrettyPrinter::visit(Global& node) {}
 void PrettyPrinter::visit(Nonlocal& node) {}
-void PrettyPrinter::visit(Pass& node) {}
+
+void PrettyPrinter::visit(Pass& node) {
+    ctx.s = "Pass()";
+}
+
 void PrettyPrinter::visit(Break& node) {}
 void PrettyPrinter::visit(Continue& node) {}
 void PrettyPrinter::visit(Lambda& node) {}
@@ -646,7 +650,7 @@ void PrettyPrinter::visit(Starred& node) {
 void PrettyPrinter::visit(arguments& node) {}
 void PrettyPrinter::visit(arg& node) {}
 void PrettyPrinter::visit(alias& node) {
-    auto s = indent() + "alias(\n";
+    string s = "alias(\n";
     {
         ctx.level++;
         s += indent() + "name='" + node.name + "',\n";

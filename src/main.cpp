@@ -7,17 +7,22 @@
 #include <sstream>
 #include <memory>
 #include <string>
+#include "Logger.h"
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
     string input = string { std::istreambuf_iterator<char>{ std::cin }, std::istreambuf_iterator<char>{} };
     Parser parser;
+
+    // Logger::level = LogLevel::DEBUG;
+    
     unique_ptr<ast> t = nullptr;
     try {
         t = parser.parse(input);
     } catch (runtime_error& e) {
         printf("error: %s\n", e.what());
+        return 1;
     }
     PrettyPrinter pprint0;
     if (t) {
