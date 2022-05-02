@@ -1,0 +1,50 @@
+name: PyserTest
+on: [push]
+jobs:
+  # TODO: matrix, cache
+  GCC:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - run: python3.10 -m pip install astpretty
+    - run: mkdir tmp && mkdir build
+    - run: cd build && cmake .. && make -j4 && cd ..
+    - run: python3.10 test.py
+  Clang:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - uses: egor-tensin/setup-clang@v1
+      with:
+        version: latest
+        platform: x64
+    - run: export CXX=clang++
+    - run: python3.10 -m pip install astpretty
+    - run: mkdir tmp && mkdir build
+    - run: cd build && cmake .. && make -j4 && cd ..
+    - run: python3.10 test.py  
+  
+  MSVC:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - uses: ilammy/msvc-dev-cmd@v1
+    - run: cmake --version
+    - run: python --version
+    - run: python -m pip install astpretty
+    - run: mkdir tmp && mkdir build
+    - run: cd build && cmake .. && cmake --build . --target pyser && cd ..
+    - run: python test.py
