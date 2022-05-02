@@ -1,0 +1,14 @@
+name: PyserTest
+on: [push]
+jobs:
+  Pyser-Test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - run: python3 --version
+    - run: gcc --version
