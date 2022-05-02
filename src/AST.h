@@ -420,7 +420,7 @@ public:
 class Import: public stmt {
 public:
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
-    Import(std::vector<alias> alias): names(move(alias)) {}
+    Import(std::vector<alias> aliases): names(move(aliases)) {}
 
 public:
     std::vector<alias> names;
@@ -428,13 +428,13 @@ public:
 
 class ImportFrom: public stmt {
 public:
-    ImportFrom(optional<string> module, std::vector<alias> alias, int level)
-        : module(move(module)), alias(move(alias)), level(std::move(level)) {}
+    ImportFrom(optional<string> module, std::vector<alias> aliases, int level)
+        : module(move(module)), aliases(move(aliases)), level(std::move(level)) {}
     virtual void accept(Visitor& visitor) override { visitor.visit(*this); }
 
 public:
     optional<string> module;
-    std::vector<alias> alias;
+    std::vector<alias> aliases;
     int level;
 };
 
