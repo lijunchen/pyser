@@ -562,7 +562,7 @@ void PrettyPrinter::visit(ImportFrom& node) {
                  (node.module ? ("'" + *node.module + "'") : "None") + ",\n";
             s += indent() + "names=[\n";
             ctx.level++;
-            for (auto& n : node.alias) {
+            for (auto& n : node.aliases) {
                 n.accept(*this);
                 s += indent() + ctx.s + ",\n";
             }
