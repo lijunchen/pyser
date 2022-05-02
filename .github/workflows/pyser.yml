@@ -33,6 +33,7 @@ jobs:
     - run: python3.10 test.py  
   
   MSVC:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
       - uses: ilammy/msvc-dev-cmd@v1
