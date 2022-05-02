@@ -7,7 +7,10 @@ from astpretty import pformat
 
 files = os.listdir("./test")
 
-pyser = Path("./build/pyser")
+if os.name == 'nt':
+    pyser = Path("./build/Debug/pyser")
+else:
+    pyser = Path("./build/pyser")
 p = Path("./test")
 
 def pyser_output(filename: Path) -> str:
