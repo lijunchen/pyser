@@ -35,16 +35,15 @@ jobs:
   MSVC:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-        with:
-          python-version: '3.10'
-          architecture: 'x64'
-      - uses: ilammy/msvc-dev-cmd@v1
-      - name: Build something requiring CL.EXE
-      - run: cmake --version
-      - run: python3.10 --version
-      - run: python3.10 -m pip install astpretty
-      - run: mkdir tmp && mkdir build
-      - run: cd build && cmake .. && cmake --build . --target all && cd ..
-      - run: python3.10 test.py
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - uses: ilammy/msvc-dev-cmd@v1
+    - run: cmake --version
+    - run: python3.10 --version
+    - run: python3.10 -m pip install astpretty
+    - run: mkdir tmp && mkdir build
+    - run: cd build && cmake .. && cmake --build . --target all && cd ..
+    - run: python3.10 test.py
