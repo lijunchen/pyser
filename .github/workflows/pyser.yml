@@ -31,3 +31,12 @@ jobs:
     - run: mkdir tmp && mkdir build
     - run: cd build && cmake .. && make -j4 && cd ..
     - run: python3.10 test.py  
+  
+  MSVC:
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Build something requiring CL.EXE
+        run: |
+          cmake --version
+      # ...
