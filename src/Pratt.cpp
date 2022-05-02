@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <stdexcept>
 
 using std::make_unique;
 using std::optional;
