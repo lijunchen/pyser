@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 import ast
 from ast import *
@@ -38,13 +39,19 @@ def answer(filename: Path) -> str:
 def test():
     p = Path("./test")
     files = sorted(p.glob("*.py"))
+    total = len(files)
+    succ = 0
     for file in files:
         out = pyser_output(file)
         ans = answer(file)
         if out == ans:
             print(f"{str(file):<48} succ")
+            succ += 1
         else:
             print(f"{str(file):<48} failed")
+    if succ != total:
+        sys.exit(-1)
+        
 
 if __name__ == "__main__":
     test()
