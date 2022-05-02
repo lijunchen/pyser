@@ -42,8 +42,8 @@ jobs:
         architecture: 'x64'
     - uses: ilammy/msvc-dev-cmd@v1
     - run: cmake --version
-    - run: python3.10 --version
-    - run: python3.10 -m pip install astpretty
+    - run: python --version
+    - run: python -m pip install astpretty
     - run: mkdir tmp && mkdir build
     - run: cd build && cmake .. && cmake --build . --target all && cd ..
-    - run: python3.10 test.py
+    - run: python test.py
